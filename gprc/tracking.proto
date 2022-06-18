@@ -1,0 +1,77 @@
+
+syntax = "proto3";
+
+package SafeEntry;
+
+// Procedure Needed
+// 1. Perform Individual Check-in
+// 2. Perform Individual Check-out
+// 3. Perform Group Check-in
+// 4. Perform Group Check-out
+// 5. Create Groups
+// 6. Add User to Groups
+// 7. Trigger Covid Cases 7.5 Send Notificiation to users
+// 8. List all SafeEntry locations
+// 9. Create report covid case
+
+service TrackingService  {
+
+    rpc Login (User) returns (Status) {}
+
+    // 1
+    rpc CreateCheckInIndividual(CheckInIndividual) returns (Status) {}
+
+    // 2; Need duplicate Here? 
+    rpc CreateCheckOutIndividual(CheckInIndividual) returns (Status) {}
+
+    // 3; Need to come back here
+    rpc CreateCheckInGroup(CheckInGroup) returns (Status) {}
+
+    // 4. Need duplicate Here? 
+    rpc CreateCheckOutGroup(CheckInGroup) returns (Status) {}
+    
+    // 5.
+    rpc CreateGroup(Group) returns (Status) {}
+
+    // 6. 
+    rpc AddUserToGroup(User) returns (Status) {}
+
+    // 7. (Come back here)
+    
+    // 8
+    rpc GetSafeEntry(User) returns (stream SafeEntry) {}
+    
+    // 9. Self report covid case
+    rpc CreateReportCovidCase (User) returns (Status) {}
+
+    
+}
+
+message CheckInIndividual {
+    string location = 2;
+}
+
+message CheckInGroup {
+    string name = 2;
+    string location = 3;
+}
+
+message User {
+    string name = 1;
+    string nric = 2;
+}
+
+message Group {
+    string name = 1;
+}
+
+message SafeEntry {
+    string checkin = 2;
+    string checkout = 3;
+}
+
+message Status {
+    string message = 1;
+}
+
+//python3 -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. ./tracking.proto
