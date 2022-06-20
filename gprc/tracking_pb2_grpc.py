@@ -17,6 +17,8 @@ class TrackingServiceStub(object):
     8. List all SafeEntry locations
     9. Create report covid case
     10. Listing of Location
+    11. Get Groups By User
+    12. Get Lastest Location and Group (For checking-out)
 
     """
 
@@ -56,25 +58,35 @@ class TrackingServiceStub(object):
                 request_serializer=tracking__pb2.Group.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
-        self.AddUserToGroup = channel.unary_unary(
+        self.AddUserToGroup = channel.stream_unary(
                 '/SafeEntry.TrackingService/AddUserToGroup',
                 request_serializer=tracking__pb2.User.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
         self.GetSafeEntry = channel.unary_stream(
                 '/SafeEntry.TrackingService/GetSafeEntry',
-                request_serializer=tracking__pb2.User.SerializeToString,
+                request_serializer=tracking__pb2.Empty.SerializeToString,
                 response_deserializer=tracking__pb2.SafeEntry.FromString,
                 )
         self.CreateReportCovidCase = channel.unary_unary(
                 '/SafeEntry.TrackingService/CreateReportCovidCase',
-                request_serializer=tracking__pb2.User.SerializeToString,
+                request_serializer=tracking__pb2.Case.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
         self.GetAllLocations = channel.unary_stream(
                 '/SafeEntry.TrackingService/GetAllLocations',
                 request_serializer=tracking__pb2.Empty.SerializeToString,
                 response_deserializer=tracking__pb2.Location.FromString,
+                )
+        self.GetGroupsByUser = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetGroupsByUser',
+                request_serializer=tracking__pb2.Empty.SerializeToString,
+                response_deserializer=tracking__pb2.Group.FromString,
+                )
+        self.GetUserRole = channel.unary_unary(
+                '/SafeEntry.TrackingService/GetUserRole',
+                request_serializer=tracking__pb2.Empty.SerializeToString,
+                response_deserializer=tracking__pb2.Role.FromString,
                 )
 
 
@@ -90,6 +102,8 @@ class TrackingServiceServicer(object):
     8. List all SafeEntry locations
     9. Create report covid case
     10. Listing of Location
+    11. Get Groups By User
+    12. Get Lastest Location and Group (For checking-out)
 
     """
 
@@ -134,7 +148,7 @@ class TrackingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AddUserToGroup(self, request, context):
+    def AddUserToGroup(self, request_iterator, context):
         """6. 
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -159,6 +173,20 @@ class TrackingServiceServicer(object):
 
     def GetAllLocations(self, request, context):
         """10. 
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetGroupsByUser(self, request, context):
+        """11.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetUserRole(self, request, context):
+        """12. Check user roles
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -197,25 +225,35 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     request_deserializer=tracking__pb2.Group.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
-            'AddUserToGroup': grpc.unary_unary_rpc_method_handler(
+            'AddUserToGroup': grpc.stream_unary_rpc_method_handler(
                     servicer.AddUserToGroup,
                     request_deserializer=tracking__pb2.User.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
             'GetSafeEntry': grpc.unary_stream_rpc_method_handler(
                     servicer.GetSafeEntry,
-                    request_deserializer=tracking__pb2.User.FromString,
+                    request_deserializer=tracking__pb2.Empty.FromString,
                     response_serializer=tracking__pb2.SafeEntry.SerializeToString,
             ),
             'CreateReportCovidCase': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateReportCovidCase,
-                    request_deserializer=tracking__pb2.User.FromString,
+                    request_deserializer=tracking__pb2.Case.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
             'GetAllLocations': grpc.unary_stream_rpc_method_handler(
                     servicer.GetAllLocations,
                     request_deserializer=tracking__pb2.Empty.FromString,
                     response_serializer=tracking__pb2.Location.SerializeToString,
+            ),
+            'GetGroupsByUser': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetGroupsByUser,
+                    request_deserializer=tracking__pb2.Empty.FromString,
+                    response_serializer=tracking__pb2.Group.SerializeToString,
+            ),
+            'GetUserRole': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetUserRole,
+                    request_deserializer=tracking__pb2.Empty.FromString,
+                    response_serializer=tracking__pb2.Role.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -236,6 +274,8 @@ class TrackingService(object):
     8. List all SafeEntry locations
     9. Create report covid case
     10. Listing of Location
+    11. Get Groups By User
+    12. Get Lastest Location and Group (For checking-out)
 
     """
 
@@ -342,7 +382,7 @@ class TrackingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def AddUserToGroup(request,
+    def AddUserToGroup(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -352,7 +392,7 @@ class TrackingService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/AddUserToGroup',
+        return grpc.experimental.stream_unary(request_iterator, target, '/SafeEntry.TrackingService/AddUserToGroup',
             tracking__pb2.User.SerializeToString,
             tracking__pb2.Status.FromString,
             options, channel_credentials,
@@ -370,7 +410,7 @@ class TrackingService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetSafeEntry',
-            tracking__pb2.User.SerializeToString,
+            tracking__pb2.Empty.SerializeToString,
             tracking__pb2.SafeEntry.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -387,7 +427,7 @@ class TrackingService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/CreateReportCovidCase',
-            tracking__pb2.User.SerializeToString,
+            tracking__pb2.Case.SerializeToString,
             tracking__pb2.Status.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -406,5 +446,39 @@ class TrackingService(object):
         return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllLocations',
             tracking__pb2.Empty.SerializeToString,
             tracking__pb2.Location.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetGroupsByUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetGroupsByUser',
+            tracking__pb2.Empty.SerializeToString,
+            tracking__pb2.Group.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetUserRole(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/GetUserRole',
+            tracking__pb2.Empty.SerializeToString,
+            tracking__pb2.Role.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
