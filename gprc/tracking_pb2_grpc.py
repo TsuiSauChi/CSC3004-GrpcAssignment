@@ -16,6 +16,7 @@ class TrackingServiceStub(object):
     7. Trigger Covid Cases 7.5 Send Notificiation to users
     8. List all SafeEntry locations
     9. Create report covid case
+    10. Listing of Location
 
     """
 
@@ -70,6 +71,11 @@ class TrackingServiceStub(object):
                 request_serializer=tracking__pb2.User.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
+        self.GetAllLocations = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetAllLocations',
+                request_serializer=tracking__pb2.Empty.SerializeToString,
+                response_deserializer=tracking__pb2.Location.FromString,
+                )
 
 
 class TrackingServiceServicer(object):
@@ -83,6 +89,7 @@ class TrackingServiceServicer(object):
     7. Trigger Covid Cases 7.5 Send Notificiation to users
     8. List all SafeEntry locations
     9. Create report covid case
+    10. Listing of Location
 
     """
 
@@ -150,6 +157,13 @@ class TrackingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAllLocations(self, request, context):
+        """10. 
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_TrackingServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -198,6 +212,11 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     request_deserializer=tracking__pb2.User.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
+            'GetAllLocations': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetAllLocations,
+                    request_deserializer=tracking__pb2.Empty.FromString,
+                    response_serializer=tracking__pb2.Location.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'SafeEntry.TrackingService', rpc_method_handlers)
@@ -216,6 +235,7 @@ class TrackingService(object):
     7. Trigger Covid Cases 7.5 Send Notificiation to users
     8. List all SafeEntry locations
     9. Create report covid case
+    10. Listing of Location
 
     """
 
@@ -369,5 +389,22 @@ class TrackingService(object):
         return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/CreateReportCovidCase',
             tracking__pb2.User.SerializeToString,
             tracking__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllLocations(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllLocations',
+            tracking__pb2.Empty.SerializeToString,
+            tracking__pb2.Location.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

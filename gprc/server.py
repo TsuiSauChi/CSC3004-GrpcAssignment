@@ -1,4 +1,5 @@
 from email import message
+from flask import request_finished
 from scipy.fftpack import fftn
 import grpc
 from concurrent import futures
@@ -41,6 +42,10 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
               return tracking_pb2.Status(message="T")
           return tracking_pb2.Status(message="T")
 
+    # def GetAllLocations(self, request, context):
+    #     cur.execute("SELECT name FROM locations")
+    #     result = cur.fetchall()
+
     # Create Check In For Individual 
     # Condition: What if user check-in to the same location?
     # Condition: What if there is double check-in without check-out
@@ -63,8 +68,29 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Create Check Out For Individual 
     # Condition: What if user the check-in is several days ago?
+    # Condition: Check out exist already; is it a postgresql issue
     def CreateCheckOutIndividual(self, request, context):
-        return super().CreateCheckOutIndividual(request, context)
+        try:
+            cur.execute("""
+            UPDATE Checkinouts c
+            SET check_out = CURRENT_TIMESTAMP
+            WHERE c.id = (
+                SELECT c.id FROM Checkinouts c
+                    INNER JOIN Users u
+                        ON c.user_id = u.id 
+                    INNER JOIN Locations l 
+                        ON c.location_id = l.id
+                    WHERE u.name = %s AND l.name = %s
+                    ORDER BY c.check_in DESC
+                LIMIT 1
+            );
+            """, (currentuser, request.location))
+            conn.commit()
+            return tracking_pb2.Status(message="T")
+        except Exception as e:
+            print("Check out Individual Error")
+            print(e)
+            return tracking_pb2.Status(message="F")
 
     # Create Check In For Group
     # Condition: Check whether currentuser belongs to the group
@@ -102,10 +128,48 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             print(e)
             return tracking_pb2.Status(message="F")
 
+    # Create Check out For Group
+    # Condition: What if user the check-in is several days ago?
+    # Condition: Check out exist already; is it a postgresql issue
+    def CreateCheckOutGroup(self, request, context):
+        try:
+            cur.execute("""
+                            SELECT DISTINCT u.name FROM Users u
+                            INNER JOIN UserGroups ug 
+                                ON u.id = ug.user_id 
+                            INNER JOIN Groups g 
+                                ON g.id = ug.group_id 
+                            WHERE g.id = (
+                                SELECT id FROM Groups 
+                                    WHERE name = 'group1'
+                            );
+                            """, (request.name))
+            users = cur.fetchall()
+            print(users)
+            for row in users:
+                cur.execute("""
+                UPDATE Checkinouts c
+                SET check_out = CURRENT_TIMESTAMP
+                WHERE c.id = (
+                    SELECT c.id FROM Checkinouts c
+                        INNER JOIN Users u
+                            ON c.user_id = u.id 
+                        INNER JOIN Locations l 
+                            ON c.location_id = l.id
+                        WHERE u.name = %s AND l.name = %s
+                        ORDER BY c.check_in DESC
+                    LIMIT 1
+                );
+                """, (row[0], request.location))
+            conn.commit()
+            return tracking_pb2.Status(message="T")
+        except Exception as e:
+            print("Check out Group Error")
+            print(e)
+            return tracking_pb2.Status(message="F")
 
     # Get Safe Entry Details By User; Need Get Location Info
     def GetSafeEntry(self, request, context):
-        print("Running query")
         cur.execute("""SELECT * from Checkinouts c
                     INNER JOIN Users u
                         ON c.user_id = u.id
@@ -120,8 +184,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                 checkin = row[3].strftime("%m/%d/%Y, %H:%M:%S"), 
                 checkout = row[4].strftime("%m/%d/%Y, %H:%M:%S")
             )
-        
-
+    
     
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

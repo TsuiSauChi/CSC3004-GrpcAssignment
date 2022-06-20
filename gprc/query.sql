@@ -27,10 +27,18 @@ SELECT DISTINCT u.name FROM Users u
     );
 
 -- Get Latest Check-in By Location
-SELECT FROM Checkinouts c
-    INNER JOIN Users u
-        ON c.user_id = u.id 
-    INNER JOIN Locations l 
-        ON c.location_id = l.id
-    WHERE u.name = "user1" AND l.name = "Orchard Road"
-    ORDER BY
+UPDATE Checkinouts c
+SET check_out = CURRENT_TIMESTAMP
+WHERE c.id = (
+    SELECT c.id FROM Checkinouts c
+        INNER JOIN Users u
+            ON c.user_id = u.id 
+        INNER JOIN Locations l 
+            ON c.location_id = l.id
+        WHERE u.name = 'user1' AND l.name = 'Orchard Road'
+        ORDER BY c.check_in DESC
+    LIMIT 1
+);
+
+-- Get All Location 
+SELECT name FROM locations;
