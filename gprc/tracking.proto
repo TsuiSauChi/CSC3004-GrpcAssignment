@@ -3,23 +3,12 @@ syntax = "proto3";
 
 package SafeEntry;
 
-// Procedure Needed
-// 1. Perform Individual Check-in
-// 2. Perform Individual Check-out
-// 3. Perform Group Check-in
-// 4. Perform Group Check-out
-// 5. Create Groups
-// 6. Add User to Groups
-// 7. Trigger Covid Cases 7.5 Send Notificiation to users
-// 8. List all SafeEntry locations
-// 9. Create report covid case
-// 10. Listing of Location
-// 11. Get Groups By User
-// 12. Get Lastest Location and Group (For checking-out)
-
 service TrackingService  {
 
-    rpc Login (User) returns (Status) {}
+    // Login procedure
+    rpc Login (User) returns (User) {}
+
+    rpc GetAllLocations(Empty) returns (stream Location) {}
 
     // 1
     rpc CreateCheckInIndividual(CheckInIndividual) returns (Status) {}
@@ -47,27 +36,32 @@ service TrackingService  {
     // 9. Self report covid case
     rpc CreateReportCovidCase (Case) returns (Status) {}
 
-    // 10. 
-    rpc GetAllLocations(Empty) returns (stream Location) {}
-
     // 11.
     rpc GetGroupsByUser(Empty) returns (stream Group) {}
-
-    // 12. Check user roles
-    rpc GetUserRole(Empty) returns (Role) {}
-    
 }
 
 message Empty {
 
 }
 
-message Role {
-    string rolename = 1;
+message User {
+    string name = 1;
+    string nric = 2;
+    string role_name = 3;
+    Group group = 4;
+    Status status = 5;
+}
+
+message Group {
+    string name = 1;
+}
+
+message Status {
+    bool status = 1;
 }
 
 message Location {
-    string location = 1;
+    string name = 1;
 }
 
 message CheckInIndividual {
@@ -79,16 +73,6 @@ message CheckInGroup {
     string location = 2;
 }
 
-message Group {
-    string name = 1;
-}
-
-message User {
-    string name = 1;
-    string nric = 2;
-    Group group = 3;
-}
-
 message SafeEntry {
     string checkin = 2;
     string checkout = 3;
@@ -97,10 +81,6 @@ message SafeEntry {
 message Case {
     User user = 1;
     Location location = 2;
-}
-
-message Status {
-    string message = 1;
 }
 
 //python3 -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. ./tracking.proto
