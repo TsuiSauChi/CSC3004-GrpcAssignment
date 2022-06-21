@@ -40,30 +40,27 @@ def notifyUser(case_id):
 class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     
     # Condition: What if user does not exist; upsert into the database
-    # Condition: Need to check roll
     def Login(self, request, context):
-          cur.execute("SELECT name, nric FROM users WHERE name = %s AND nric = %s", 
-            (request.name, request.nric))
-          result = cur.fetchone()
-
-          print(result)
-
-          if result is not None:
-              currentuser = result[0]
-              print(currentuser + " is logged in")
-              return tracking_pb2.Status(message="T")
-          return tracking_pb2.Status(message="T")
-
-    # Get User Role
-    def GetUserRole(self, request, context):
         cur.execute("""
-            SELECT r.rolename FROM Roles r 
-            INNER JOIN Users u 
-                ON u.role_id = r.id 
-            WHERE u.name = 'user1';
-        """, (currentuser,))
+        SELECT r.rolename, u.name FROM Users u 
+            INNER JOIN Roles r 
+                ON u.role_id = r.id
+            WHERE u.name = %s and u.nric = %s;
+        """, (request.name, request.nric))
         result = cur.fetchone()
-        return tracking_pb2.Role(rolename = result)
+
+        if result is not None:
+            # Set User Session
+            currentuser = result[1]
+            print(currentuser + " is logged in")
+            return tracking_pb2.User(
+                name=currentuser, 
+                role_name=result[0], 
+                status = tracking_pb2.Status(status=True))
+        else:
+            return tracking_pb2.User(
+                status = tracking_pb2.Status(status=True)
+            )
 
     # Get All Locations 
     def GetAllLocations(self, request, context):
@@ -71,7 +68,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.Location(
-                location = row[0]
+                name = row[0]
             )
 
     # Get All groups by current User
@@ -135,8 +132,8 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     # Create Check In For Individual 
     # Condition: What if user check-in to the same location?
     # Condition: What if there is double check-in without check-out
-    # Condition: What if there is no current user; back to login?
-    def CheckInIndividual(self, request, context):
+    def CreateCheckInIndividual(self, request, context):
+        print("Check in Request", request)
         try:
             cur.execute("""
                         INSERT INTO Checkinouts (user_id, location_id)
@@ -144,13 +141,13 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                             (SELECT id FROM Users WHERE name = %s),
                             (SELECT id FROM Locations WHERE name = %s)
                         );
-                        """, (request.user.name, request.location))
+                        """, (currentuser, request.location))
             conn.commit()
-            return tracking_pb2.Status(message="T")
+            return tracking_pb2.Status(status=True)
         except Exception as e:
             print("Check in Individual Error")
             print(e)
-            return tracking_pb2.Status(message="F")
+            return tracking_pb2.Status(status=False)
 
     # Create Check Out For Individual 
     # Condition: What if user the check-in is several days ago?

@@ -1,3 +1,9 @@
+-- Login
+SELECT r.rolename FROM Users u 
+    INNER JOIN Roles r 
+        ON u.role_id = r.id
+    WHERE u.name = %s and u.nric = %s;
+
 
 -- Get SafeEntry By User
 SELECT * from Checkinouts c
