@@ -199,7 +199,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                             SELECT id FROM Groups 
                                 WHERE name = %s 
                         );
-                        """, (request.name))
+                        """, (request.name,))
             users = cur.fetchall()
             for row in users:
                 cur.execute("""

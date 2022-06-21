@@ -13,6 +13,8 @@ successCheckInGroup = stub.CreateCheckInGroup(tracking_pb2.CheckInGroup(
     location="Orchard Road")
 )
 print(successCheckInGroup)
+
+
 # def handler():
 #     for i in range(2,5):
 #         yield tracking_pb2.User(name='user'+str(i), group =tracking_pb2.Group(name='group2'))
