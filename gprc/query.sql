@@ -62,8 +62,8 @@ INSERT INTO Groups (name) VALUES ('group2') returning id;
 
 -- Add User into Group 
  INSERT INTO UserGroups (user_id, group_id) VALUES (
-    (SELECT id FROM Users WHERE name = %s),
-    (SELECT id FROM Groups WHERE name = %s)
+    (SELECT id FROM Users WHERE name = 'user1'),
+    2
 );
 
 -- Create Covid Case
@@ -85,3 +85,13 @@ SELECT r.rolename FROM Roles r
     INNER JOIN Users u 
         ON u.role_id = r.id 
     WHERE u.name = 'user1';
+
+-- Select Available Check-in Options
+SELECT u.name, g.name, l.name from Checkinouts c 
+    INNER JOIN Locations l 
+        ON l.id = c.location_id
+    INNER JOIN Users u 
+        ON c.user_id = u.id 
+    LEFT JOIN Groups g 
+        ON c.group_id = g.id
+    WHERE c.check_out IS NULL;

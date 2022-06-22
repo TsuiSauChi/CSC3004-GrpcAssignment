@@ -54,15 +54,28 @@ def selectLocation():
         return locations_list[int(i)-1].name
 
 def checkInIndivudal(location):
-    result = stub.CreateCheckInIndividual(tracking_pb2.CheckInIndividual(
-        location = location
+    result = stub.CreateCheckInIndividual(tracking_pb2.Location(
+        name = location
     ))
     if result.status is False:
-        print("Check in Failed")
+        print("Individual Check in Failed")
         return False
     else:
-        print("Checked in succesfully to " + location)
+        print("Individual Checked in succesfully to " + location)
         return True
+
+def checkInGroup(location, group):
+    result = stub.CreateCheckInGroup(tracking_pb2.Location(
+        name = location,
+        group = tracking_pb2.Group(name = group)
+    ))
+    if result.status is False:
+        print("Group Check in Failed")
+        return False
+    else:
+        print("Group Checked in succesfully to " + location)
+        return True
+
 
 def selectGroup():
     groups_list = list(stub.GetGroupsByUser(tracking_pb2.Empty()))
@@ -71,21 +84,69 @@ def selectGroup():
     for count, group in enumerate(groups_list):
         print(str(count+1) + ": " + group.name)
     print()
+    print("Enter a group you would like in check in to")
+    i = input("Select Option 1 to " + str(len(groups_list)) + ": ")
+    if int(i) > len(groups_list):
+        return None 
+    else:
+        print()
+        print("Selected Group: " + groups_list[int(i)-1].name)
+        return groups_list[int(i)-1].name
+
+def getCheckOutOptions():
+    checkout_list = list(stub.GetCheckOutOptions(tracking_pb2.Empty()))
+    print()
+    print("Listing Check Out Options")
+    for count, check_out in enumerate(checkout_list):
+        if (check_out.group.name):
+            print(str(count+1) + ": Group " + check_out.group.name + "; Location = " + check_out.location.name)
+        else:
+            print(str(count+1) + ": Indivudal Check in;  " + " Location = "  + check_out.location.name)
+    print()
+    print("Enter a option to check out to")
+    i = input("Select Option 1 to " + str(len(checkout_list)) + ": ")
+    if int(i) > len(checkout_list):
+        return None
+    else:
+        print()
+        print("Selected Check out Option: " + i)
+        return checkout_list[int(i)-1].id
+
+def checkOut(id):
+    result = stub.CreateCheckOut(tracking_pb2.CheckOut(id=id))
+    if result.status is False:
+        print("Check out Failed")
+        return False
+    else:
+        print("Group out succesful")
+        return True
+
+# Come back here
+def createGroup(group_name):
+    print()
+    group_name = input("Enter the new group name: ")
+    print("Enetered group name", group_name)
+    result = stub.CreateGroup(tracking_pb2.Group(name=group_name))
+    if(result.status.status):
+        pass
+    else:
+        createGroup(group_name)
 
 role = login(name, nric)
 
 while loop: 
     print()
-    print()
+    print("##########")
 
     # Options depending on user roles
     if role == "Normal":
         print("Options")
         print("1: Check in ")
         print("2: Check Out")
-        print("3: List SafeEntry")
-        print("4: Self Report Covid Case")
-        print("5: Exit Program")
+        print("3: Create Group")
+        print("4: List SafeEntry")
+        print("5: Self Report Covid Case")
+        print("6: Exit Program")
 
         option = input("Enter your Option ")
 
@@ -101,6 +162,7 @@ while loop:
     print("Option Selected: " + option)
     print("Current role " + role)
 
+    # Option: Check in 
     if option == "1" and role == "Normal":
         # Select Location
         location = selectLocation()
@@ -109,31 +171,55 @@ while loop:
             loop = False
         else:
             # Check whether check in is individual or group
-            group = input("Would like to Group Check in? (YES/NO) ")
-            if group == "YES":
-                # Perform Query to List all groups
-                selectGroup() 
-                ## Continue Here
+            groupcheckin = input("Would like to Group Check in? (y/n) ")
+            print()
+            if groupcheckin == "y":
+                # Perform Query to Select groups
+                group = selectGroup() 
+                if group is None:
+                    print("Invalid Group")
+                    loop = False
+                else:
+                    # Perform Check-in for Group
+                    status = checkInGroup(location, group)
+                    if status is False:
+                        loop = False
 
-            else:
+            elif groupcheckin == "n":
                 # Perform Check-in for Individual
                 status = checkInIndivudal(location)
                 if status is False:
                     loop = False
-    elif option == "2" and role == "Normal":
-        pass  
 
+            else:
+                print("Please Enter a correct option; either y or no")
+                loop = True
+
+    # Option: Check out
+    elif option == "2" and role == "Normal":
+        check_out_id = getCheckOutOptions()
+        if check_out_id is None:
+            print("Invalid Check out Option")
+            loop = False
+        else:
+            print("Check out option::: ", check_out_id)
+            status = checkOut(check_out_id)
+
+    # Option: Create Group
     elif option == "3" and role == "Normal":
-        pass 
+        createGroup(group_name=None) 
     
     elif option == "4" and role == "Normal":
+        pass
+
+    elif option == "5" and role == "Normal":
         pass
 
     elif option == "1" and role == "Officer":
         print("Option 1 Selected")
         pass 
 
-    elif (option == "5" and role == "Normal") or (option == "2" and role == "Officer"):
+    elif (option == "6" and role == "Normal") or (option == "2" and role == "Officer"):
         print("Exiting Program")
         loop = False 
 

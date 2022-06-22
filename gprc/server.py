@@ -10,11 +10,18 @@ import psycopg2 as pg
 
 # Database Connection Config
 ### NEED TO REFCATOR HERE ###
+# conn = pg.connect(
+#     host="174.138.23.75",
+#     database="testing",
+#     user="postgres",
+#     password="cl0udplus!"
+# )
+
 conn = pg.connect(
-    host="174.138.23.75",
-    database="testing",
-    user="postgres",
-    password="cl0udplus!"
+    host="localhost",
+    database="grpc",
+    user="jamestsui",
+    password="password"
 )
 
 cur =  conn.cursor()
@@ -88,30 +95,39 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             )
 
     # Create New Group 
-    # Need to test here
     def CreateGroup(self, request, context):
-        # Create new group
-        print("Running", request)
-        cur.execute("INSERT INTO Groups (name) VALUES (%s) returning id;", (request.name,))
-        group_id = cur.fetchone()[0]
-        # Add currentuser into new group
-        try:
-            cur.execute("""
-            INSERT INTO UserGroups (user_id, group_id) VALUES (
-                (SELECT id FROM Users WHERE name = %s),
-                %s
-            )
-            """, (currentuser, group_id))
-            return tracking_pb2.Status(message="T")
-        except Exception as e:
-            print("Create Group Error")
-            print(e)
-            return tracking_pb2.Status(message="F")
+        print("Request", request)
+        cur.execute("SELECT name FROM Groups WHERE name = %s", (request.name,))
+        existing_group = cur.fetchone()
+        if existing_group is not None:
+            print("Group name already exist")
+            return tracking_pb2.Group(status= tracking_pb2.Status(status=False))
+        else:
+            cur.execute("INSERT INTO Groups (name) VALUES (%s) returning id;", (request.name,))
+            group_id = cur.fetchone()[0]
+            conn.commit()
+            # Add currentuser into new group
+            try:
+                cur.execute("""
+                INSERT INTO UserGroups (user_id, group_id) VALUES (
+                    (SELECT id FROM Users WHERE name = %s),
+                    %s
+                )
+                """, (currentuser, group_id))
+                print("Testing", group_id, currentuser)
+                conn.commit()
+                return tracking_pb2.Group(
+                        name = request.name,
+                        status= tracking_pb2.Status(status=True)
+                    )
+            except Exception as e:
+                print("Create Group Error")
+                print(e)
+                return tracking_pb2.Group(status=tracking_pb2.Status(status=False))
 
     # Add User to Group
     # Condition: What if no user exist?
     def AddUserToGroup(self, request_iterator, context):
-        print("running request", request_iterator)
         try:
             for user in request_iterator:
                 print(user)
@@ -130,10 +146,8 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
         
    
     # Create Check In For Individual 
-    # Condition: What if user check-in to the same location?
-    # Condition: What if there is double check-in without check-out
     def CreateCheckInIndividual(self, request, context):
-        print("Check in Request", request)
+        print("Check in Individual Request", request)
         try:
             cur.execute("""
                         INSERT INTO Checkinouts (user_id, location_id)
@@ -141,7 +155,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                             (SELECT id FROM Users WHERE name = %s),
                             (SELECT id FROM Locations WHERE name = %s)
                         );
-                        """, (currentuser, request.location))
+                        """, (currentuser, request.name))
             conn.commit()
             return tracking_pb2.Status(status=True)
         except Exception as e:
@@ -149,110 +163,63 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             print(e)
             return tracking_pb2.Status(status=False)
 
+    # Create Check In For Group
+    def CreateCheckInGroup(self, request, context):
+        try:
+            print("Check in Individual Request", request)
+            cur.execute("""
+                INSERT INTO Checkinouts (user_id, group_id, location_id)
+                            VALUES (
+                                (SELECT id FROM Users WHERE name = %s),
+                                (SELECT id FROM Groups WHERE name = %s),
+                                (SELECT id FROM Locations WHERE name = %s)
+                );
+            """, (currentuser, request.group.name , request.name))
+            conn.commit()
+            return tracking_pb2.Status(status=True)
+        except Exception as e:
+            print("Check in Individual Error")
+            print(e)
+            return tracking_pb2.Status(status=False)
+
+    # Get All possible Check-out options
+    def GetCheckOutOptions(self, request, context):
+        cur.execute("""
+            SELECT c.id, g.name, l.name from Checkinouts c 
+                INNER JOIN Locations l 
+                    ON l.id = c.location_id
+                INNER JOIN Users u 
+                    ON c.user_id = u.id 
+                LEFT JOIN Groups g 
+                    ON c.group_id = g.id
+            WHERE c.check_out IS NULL;
+        """)
+        result = cur.fetchall()
+        for row in result:
+            yield tracking_pb2.CheckOut(
+                id = row[0],
+                location = tracking_pb2.Location(
+                    name = row[2]
+                ),
+                group = tracking_pb2.Group(
+                    name = row[1]
+                )
+            )
+
     # Create Check Out For Individual 
-    # Condition: What if user the check-in is several days ago?
-    # Condition: Check out exist already; is it a postgresql issue
-    # Condition: What if user did not check out?
-    def CreateCheckOutIndividual(self, request, context):
+    def CreateCheckOut(self, request, context):
         try:
             cur.execute("""
             UPDATE Checkinouts c
             SET check_out = CURRENT_TIMESTAMP
-            WHERE c.id = (
-                SELECT c.id FROM Checkinouts c
-                    INNER JOIN Users u
-                        ON c.user_id = u.id 
-                    INNER JOIN Locations l 
-                        ON c.location_id = l.id
-                    WHERE u.name = %s AND l.name = %s
-                    ORDER BY c.check_in DESC
-                LIMIT 1
-            );
-            """, (currentuser, request.location))
+            WHERE c.id = %s
+            """, (request.id,))
             conn.commit()
-            return tracking_pb2.Status(message="T")
+            return tracking_pb2.Status(status=True)
         except Exception as e:
             print("Check out Individual Error")
             print(e)
-            return tracking_pb2.Status(message="F")
-
-    # Create Check In For Group
-    # Condition: Check whether currentuser belongs to the group
-    # Condition: What if user check-in to the same location?
-    # Condition: What if there is double check-in without check-out;
-        # Error showing the previous check-in?
-    # Condition: What if there is no current user; back to login?
-    # Condition: Need is a query to get all the groups for the current user
-    def CreateCheckInGroup(self, request, context):
-        print(request)
-        try:
-            cur.execute("""
-                        SELECT DISTINCT u.name FROM Users u
-                        INNER JOIN UserGroups ug 
-                            ON u.id = ug.user_id 
-                        INNER JOIN Groups g 
-                            ON g.id = ug.group_id 
-                        WHERE g.id = (
-                            SELECT id FROM Groups 
-                                WHERE name = %s 
-                        );
-                        """, (request.name,))
-            users = cur.fetchall()
-            for row in users:
-                cur.execute("""
-                        INSERT INTO Checkinouts (user_id, location_id)
-                            VALUES (
-                                (SELECT id FROM Users WHERE name = %s),
-                                (SELECT id FROM Locations WHERE name = %s)
-                            );
-                            """, (row[0], request.location))
-            conn.commit()
-            return tracking_pb2.Status(message="T")
-        except Exception as e:
-            print("Check in Group Error")
-            print(e)
-            return tracking_pb2.Status(message="F")
-
-    # Create Check out For Group
-    # Condition: What if user the check-in is several days ago?
-    # Condition: Check out exist already; is it a postgresql issue
-    # Condition: What if user did not check out?
-    def CreateCheckOutGroup(self, request, context):
-        try:
-            cur.execute("""
-                            SELECT DISTINCT u.name FROM Users u
-                            INNER JOIN UserGroups ug 
-                                ON u.id = ug.user_id 
-                            INNER JOIN Groups g 
-                                ON g.id = ug.group_id 
-                            WHERE g.id = (
-                                SELECT id FROM Groups 
-                                    WHERE name = 'group1'
-                            );
-                            """, (request.name))
-            users = cur.fetchall()
-            print(users)
-            for row in users:
-                cur.execute("""
-                UPDATE Checkinouts c
-                SET check_out = CURRENT_TIMESTAMP
-                WHERE c.id = (
-                    SELECT c.id FROM Checkinouts c
-                        INNER JOIN Users u
-                            ON c.user_id = u.id 
-                        INNER JOIN Locations l 
-                            ON c.location_id = l.id
-                        WHERE u.name = %s AND l.name = %s
-                        ORDER BY c.check_in DESC
-                    LIMIT 1
-                );
-                """, (row[0], request.location))
-            conn.commit()
-            return tracking_pb2.Status(message="T")
-        except Exception as e:
-            print("Check out Group Error")
-            print(e)
-            return tracking_pb2.Status(message="F")
+            return tracking_pb2.Status(status=False)
 
     # Get Safe Entry Details By User; Need Get Location Info
     def GetSafeEntry(self, request, context):
