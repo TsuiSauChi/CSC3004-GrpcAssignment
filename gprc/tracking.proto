@@ -3,6 +3,7 @@ syntax = "proto3";
 
 package SafeEntry;
 
+// Note: Come back to
 service TrackingService  {
 
     // Login procedure
@@ -10,25 +11,17 @@ service TrackingService  {
 
     rpc GetAllLocations(Empty) returns (stream Location) {}
 
-    // 1
-    rpc CreateCheckInIndividual(CheckInIndividual) returns (Status) {}
+    rpc GetCheckOutOptions(Empty) returns (stream CheckOut) {}
 
-    // 2; Need duplicate Here? 
-    rpc CreateCheckOutIndividual(CheckInIndividual) returns (Status) {}
+    rpc CreateCheckInIndividual(Location) returns (Status) {}
+    rpc CreateCheckInGroup(Location) returns (Status) {}
+    rpc CreateCheckOut(CheckOut) returns (Status) {}
 
-    // 3; Need to come back here
-    rpc CreateCheckInGroup(CheckInGroup) returns (Status) {}
-
-    // 4. Need duplicate Here? 
-    rpc CreateCheckOutGroup(CheckInGroup) returns (Status) {}
-    
     // 5.
-    rpc CreateGroup(Group) returns (Status) {}
+    rpc CreateGroup(Group) returns (Group) {}
 
     // 6. 
     rpc AddUserToGroup(stream User) returns (Status) {}
-
-    // 7. (Come back here)
     
     // 8
     rpc GetSafeEntry(Empty) returns (stream SafeEntry) {}
@@ -54,6 +47,8 @@ message User {
 
 message Group {
     string name = 1;
+    User user = 2;
+    Status status = 3;
 }
 
 message Status {
@@ -61,16 +56,14 @@ message Status {
 }
 
 message Location {
-    string name = 1;
+    Group group = 1;
+    string name = 2;
 }
 
-message CheckInIndividual {
-    string location = 2;
-}
-
-message CheckInGroup {
-    string name = 1;
-    string location = 2;
+message CheckOut {
+    int32 id = 1;
+    Location location = 2;
+    Group group = 3;
 }
 
 message SafeEntry {
