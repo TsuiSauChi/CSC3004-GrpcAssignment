@@ -6,7 +6,6 @@ package SafeEntry;
 // Note: Come back to
 service TrackingService  {
 
-    // Login procedure
     rpc Login (User) returns (User) {}
 
     rpc GetAllLocations(Empty) returns (stream Location) {}
@@ -17,20 +16,15 @@ service TrackingService  {
     rpc CreateCheckInGroup(Location) returns (Status) {}
     rpc CreateCheckOut(CheckOut) returns (Status) {}
 
-    // 5.
+    rpc GetAllUsers(Empty) returns (stream User) {}
+    rpc GetGroupsByUser(Empty) returns (stream Group) {}
     rpc CreateGroup(Group) returns (Group) {}
-
-    // 6. 
     rpc AddUserToGroup(stream User) returns (Status) {}
     
-    // 8
     rpc GetSafeEntry(Empty) returns (stream SafeEntry) {}
     
-    // 9. Self report covid case
-    rpc CreateReportCovidCase (Case) returns (Status) {}
-
-    // 11.
-    rpc GetGroupsByUser(Empty) returns (stream Group) {}
+    rpc GetCovidLocationByUser (User) returns (stream Location) {}
+    rpc CreateReportCovidCase (stream Location) returns (Status) {}
 }
 
 message Empty {
@@ -56,8 +50,9 @@ message Status {
 }
 
 message Location {
-    Group group = 1;
-    string name = 2;
+    int32 id = 1;
+    Group group = 2;
+    string name = 3;
 }
 
 message CheckOut {
@@ -67,8 +62,10 @@ message CheckOut {
 }
 
 message SafeEntry {
-    string checkin = 2;
-    string checkout = 3;
+    Location location = 1;
+    Group group = 2;
+    string checkin = 3;
+    string checkout = 4;
 }
 
 message Case {

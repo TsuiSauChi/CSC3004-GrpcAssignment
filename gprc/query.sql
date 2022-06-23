@@ -6,9 +6,13 @@ SELECT r.rolename FROM Users u
 
 
 -- Get SafeEntry By User
-SELECT * from Checkinouts c
+SELECT l.name, c.check_in, c.check_out, g.name from Checkinouts c
     INNER JOIN Users u
         ON c.user_id = u.id
+    INNER JOIN Locations l 
+        ON c.location_id = l.id
+    LEFT JOIN Groups g 
+        ON c.group_id = g.id
     WHERE u.id = (
         SELECT id from Users 
             WHERE name = 'user1'
@@ -95,3 +99,18 @@ SELECT u.name, g.name, l.name from Checkinouts c
     LEFT JOIN Groups g 
         ON c.group_id = g.id
     WHERE c.check_out IS NULL;
+
+-- Get All user except for added users
+SELECT u.name FROM Users u
+    INNER JOIN Roles r 
+        ON u.role_id = r.id 
+    WHERE name NOT IN ('user1') and r.rolename = 'Normal';
+
+-- Get All Locations visited by current user in the past 14 days
+SELECT DISTINCT l.name FROM Locations l 
+    INNER JOIN Checkinouts c
+        ON l.id = c.location_id
+    INNER JOIN Users u 
+        ON u.id = c.user_id
+    WHERE c.check_in::DATE - 14 <= NOW()
+        AND u.name = 'user1';

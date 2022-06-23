@@ -38,20 +38,28 @@ def login(name, nric):
 
 def selectLocation():
     print()
-    print("Listing All Location")
-    locations_list = list(stub.GetAllLocations(tracking_pb2.Empty()))
+    locations_list = getAllLocations()
     for count, location in enumerate(locations_list):
         print(str(count+1) + " " + location.name)
     print()
-    # User Input for location
-    print("Enter Location Option you would like to check in to ")
-    i = input("Select Option 1 to " + str(len(locations_list)) + ": ")
+    # If no location options is available
+    if str(len(locations_list)) == "0":
+        print("No location Options Available")
+        return None 
+    # Get User input on location
+    else:
+        print("Enter Location")
+        i = input("Select Option 1 to " + str(len(locations_list)) + ": ")
     if int(i) > len(locations_list):
         return None 
     else:
         print()
         print("Selected Location: " + locations_list[int(i)-1].name)
-        return locations_list[int(i)-1].name
+        return locations_list[int(i)-1]
+
+def getAllLocations():
+    print("Listing All Location")
+    return list(stub.GetAllLocations(tracking_pb2.Empty()))
 
 def checkInIndivudal(location):
     result = stub.CreateCheckInIndividual(tracking_pb2.Location(
@@ -84,8 +92,14 @@ def selectGroup():
     for count, group in enumerate(groups_list):
         print(str(count+1) + ": " + group.name)
     print()
-    print("Enter a group you would like in check in to")
-    i = input("Select Option 1 to " + str(len(groups_list)) + ": ")
+    # If no group options is available
+    if str(len(groups_list)) == "0":
+        print("No Checkout Options Available")
+        return None
+    # Get user input on group options
+    else:
+        print("Enter a group you would like in check in to")
+        i = input("Select Option 1 to " + str(len(groups_list)) + ": ")
     if int(i) > len(groups_list):
         return None 
     else:
@@ -103,8 +117,14 @@ def getCheckOutOptions():
         else:
             print(str(count+1) + ": Indivudal Check in;  " + " Location = "  + check_out.location.name)
     print()
-    print("Enter a option to check out to")
-    i = input("Select Option 1 to " + str(len(checkout_list)) + ": ")
+    # If no check out options available
+    if str(len(checkout_list)) == "0":
+        print("No Checkout Options Available")
+        return None
+    # Get user input on check out options
+    else:
+        print("Enter a option to check out to")
+        i = input("Select Option 1 to " + str(len(checkout_list)) + ": ")
     if int(i) > len(checkout_list):
         return None
     else:
@@ -128,9 +148,111 @@ def createGroup(group_name):
     print("Enetered group name", group_name)
     result = stub.CreateGroup(tracking_pb2.Group(name=group_name))
     if(result.status.status):
-        pass
+        addUserToGroup(result.name)
+        return None
     else:
+        print("Group name exist")
         createGroup(group_name)
+
+def addUserToGroup(group_name):
+    loop = True
+    user_list = list()
+    while loop:
+        print()
+        print("Options")
+        print("1: Include user to group")
+        print("2: Finish Adding Users")
+
+        option = input("Enter your Option: ")
+
+        if option == "1":
+            print()
+            print("Users to be included: ")
+            for user in user_list:
+                print(user, end=', ')
+            # List all users except currentuser
+            selected_user = selectUser()
+            # Append users to list
+            if selected_user not in user_list:
+                user_list.append(selected_user)
+            else:
+                print("User is already included")
+            pass 
+        elif option == "2":
+            # Add users to group
+            def handler():
+                for user in user_list:
+                    yield tracking_pb2.User(
+                        name = user,
+                        group = tracking_pb2.Group(name = group_name)
+                    )
+            status = stub.AddUserToGroup(handler())
+            user_list = [] 
+
+            # End loop
+            loop = False
+        else:
+            print("Please enter a valid option")
+    return None
+
+def selectUser():
+    print()
+    user_list = getAllUser()
+    for count, user in enumerate(user_list):
+        print(str(count+1) + ": " + user.name)
+    print()
+    if str(len(user_list)) == "0":
+        print("No User Options Available")
+        return None
+    else:
+        print("Enter a user option ")
+        i = input("Select Option 1 to " + str(len(user_list)) + ": ")
+    if int(i) > len(user_list):
+        return None
+    else:
+        print()
+        print("Selected Check out Option: " + i)
+        return user_list[int(i)-1].name
+
+def getAllUser():
+    return list(stub.GetAllUsers(tracking_pb2.Empty()))
+
+def getSafeEntryHistory():
+    print("### SAFEENTRY HISTORY ###")
+    print("#########################")
+    for count, row in enumerate(stub.GetSafeEntry(tracking_pb2.Empty())):
+        print(str(count+1) + ": Location: " + row.location.name)
+        print("Check in: " + row.checkin)
+        print("Check out: " + row.checkout)
+        if row.group.name:
+            print("Group name: " + row.group.name)
+        else:
+            print("Individual")
+        print()
+
+def getCovidLocationByUser(name):
+    def handler():
+        for location in stub.GetCovidLocationByUser(tracking_pb2.User(name=name)):
+            yield tracking_pb2.Location(id = location.id)
+    createCovidCase(handler)
+
+## Error Here
+def createCovidCase(location_handler):
+    # Check if there is mutiple location; whether request is a stream
+    if callable(location_handler):
+        status = stub.CreateReportCovidCase(location_handler())
+        return status.status
+    else:
+        # Need to get id from LOCATION HERE
+        def handler():
+            print("Location Handler", location_handler)
+            for id in [location_handler]:
+                print("Location id", id)
+                yield tracking_pb2.Location(id=id)
+        status = stub.CreateReportCovidCase(handler())
+        print(status)
+        return status.status
+
 
 role = login(name, nric)
 
@@ -181,13 +303,13 @@ while loop:
                     loop = False
                 else:
                     # Perform Check-in for Group
-                    status = checkInGroup(location, group)
+                    status = checkInGroup(location.name, group)
                     if status is False:
                         loop = False
 
             elif groupcheckin == "n":
                 # Perform Check-in for Individual
-                status = checkInIndivudal(location)
+                status = checkInIndivudal(location.name)
                 if status is False:
                     loop = False
 
@@ -210,17 +332,21 @@ while loop:
         createGroup(group_name=None) 
     
     elif option == "4" and role == "Normal":
-        pass
+        status = getSafeEntryHistory()
+        if (status == False):
+            print("Error during Self Reporting Operation")
+            loop = False
 
     elif option == "5" and role == "Normal":
-        pass
+        getCovidLocationByUser(name)
 
     elif option == "1" and role == "Officer":
-        print("Option 1 Selected")
-        pass 
+        print("Select Location that has Covid Cases")
+        location = selectLocation()
+        createCovidCase(location.id)
 
     elif (option == "6" and role == "Normal") or (option == "2" and role == "Officer"):
-        print("Exiting Program")
+        print("Existing Program")
         loop = False 
 
     else:

@@ -10,19 +10,19 @@ import psycopg2 as pg
 
 # Database Connection Config
 ### NEED TO REFCATOR HERE ###
-# conn = pg.connect(
-#     host="174.138.23.75",
-#     database="testing",
-#     user="postgres",
-#     password="cl0udplus!"
-# )
-
 conn = pg.connect(
-    host="localhost",
-    database="grpc",
-    user="jamestsui",
-    password="password"
+    host="174.138.23.75",
+    database="testing",
+    user="postgres",
+    password="cl0udplus!"
 )
+
+# conn = pg.connect(
+#     host="localhost",
+#     database="grpc2",
+#     user="jamestsui",
+#     password="password"
+# )
 
 cur =  conn.cursor()
 
@@ -71,11 +71,12 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Get All Locations 
     def GetAllLocations(self, request, context):
-        cur.execute("SELECT name FROM locations")
+        cur.execute("SELECT id, name FROM locations")
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.Location(
-                name = row[0]
+                id = row[0],
+                name = row[1]
             )
 
     # Get All groups by current User
@@ -96,7 +97,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Create New Group 
     def CreateGroup(self, request, context):
-        print("Request", request)
         cur.execute("SELECT name FROM Groups WHERE name = %s", (request.name,))
         existing_group = cur.fetchone()
         if existing_group is not None:
@@ -112,9 +112,8 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                 INSERT INTO UserGroups (user_id, group_id) VALUES (
                     (SELECT id FROM Users WHERE name = %s),
                     %s
-                )
+                ) 
                 """, (currentuser, group_id))
-                print("Testing", group_id, currentuser)
                 conn.commit()
                 return tracking_pb2.Group(
                         name = request.name,
@@ -125,12 +124,22 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                 print(e)
                 return tracking_pb2.Group(status=tracking_pb2.Status(status=False))
 
+    def GetAllUsers(self, request, context):
+        cur.execute("""
+            SELECT u.name FROM Users u
+                INNER JOIN Roles r 
+                    ON u.role_id = r.id 
+                WHERE name <> %s and r.rolename = 'Normal';
+        """, (currentuser,))
+        result = cur.fetchall()
+        for row in result:
+            yield tracking_pb2.User(name=row[0])
+
+
     # Add User to Group
-    # Condition: What if no user exist?
     def AddUserToGroup(self, request_iterator, context):
         try:
             for user in request_iterator:
-                print(user)
                 cur.execute("""
                 INSERT INTO UserGroups (user_id, group_id) VALUES (
                     (SELECT id FROM Users WHERE name = %s),
@@ -138,11 +147,11 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                 )
                 """, (user.name, user.group.name))
             conn.commit()
-            return tracking_pb2.Status(message="T")
+            return tracking_pb2.Status(status=True)
         except Exception as e:
             print("Add User To Group Error")
             print(e)
-            return tracking_pb2.Status(message="F")
+            return tracking_pb2.Status(status=False)
         
    
     # Create Check In For Individual 
@@ -223,32 +232,70 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Get Safe Entry Details By User; Need Get Location Info
     def GetSafeEntry(self, request, context):
-        cur.execute("""SELECT * from Checkinouts c
-                    INNER JOIN Users u
-                        ON c.user_id = u.id
-                    WHERE u.id = (
-                        SELECT id from Users 
-                            WHERE name = %s
-                    );""", (currentuser))
+        cur.execute("""SELECT l.name, c.check_in, c.check_out, g.name from Checkinouts c
+                        INNER JOIN Users u
+                            ON c.user_id = u.id
+                        INNER JOIN Locations l 
+                            ON c.location_id = l.id
+                        LEFT JOIN Groups g 
+                            ON c.group_id = g.id
+                        WHERE u.id = (
+                            SELECT id from Users 
+                                WHERE name = 'user1'
+                        );""", (currentuser))
 
         result = cur.fetchall()
         for row in result:
-            yield tracking_pb2.CheckIn(
-                checkin = row[3].strftime("%m/%d/%Y, %H:%M:%S"), 
-                checkout = row[4].strftime("%m/%d/%Y, %H:%M:%S")
-            )
+            if row[2] is None:
+                yield tracking_pb2.SafeEntry(
+                    location = tracking_pb2.Location(name = row[0]),
+                    group = tracking_pb2.Group(name = row[3]),
+                    checkin = row[1].strftime("%m/%d/%Y, %H:%M:%S"), 
+                    checkout = ''
+                )
+            else:  
+                yield tracking_pb2.SafeEntry(
+                    location = tracking_pb2.Location(name = row[0]),
+                    group = tracking_pb2.Group(name = row[3]),
+                    checkin = row[1].strftime("%m/%d/%Y, %H:%M:%S"), 
+                    checkout = row[2].strftime("%m/%d/%Y, %H:%M:%S")
+                )
+
+    # Condition: What about Building and Store
+    def GetCovidLocationByUser(self, request, context):
+        cur.execute("""
+            SELECT DISTINCT l.id FROM Locations l 
+                INNER JOIN Checkinouts c
+                    ON l.id = c.location_id
+                INNER JOIN Users u 
+                    ON u.id = c.user_id
+                WHERE c.check_in::DATE - 14 <= NOW()
+                    AND u.name = %s;
+        """, (request.name,))
+        result = cur.fetchall()
+        for row in result:
+            yield tracking_pb2.Location(id=row[0])
 
     # Create a Covid Case
     # Condition: Error Tracking
-    def CreateReportCovidCase(self, request, context):
-        cur.execute("""
-            INSERT INTO Cases (user_id, location_id) VALUES (
-                (SELECT id FROM Users WHERE name = %s),
-                (SELECT id FROM Locations WHERE name = %s)
-            ) returning id;
-        """, (request.user.name, request.location.location))
-        case_id = cur.fetchone()[0]
-        notifyUser(case_id)
+    def CreateReportCovidCase(self, request_iterator, context):
+        print(len(request_iterator))
+        for row in list(request_iterator):
+            print("Testing")
+        try:
+            for row in request_iterator:
+                print("Hello WOrld : ", row.id)
+                cur.execute("""
+                INSERT INTO Cases (location_id) VALUES (%s);
+                """, (row.id,))
+                conn.commit()
+            return tracking_pb2.Status(status=True)
+        except Exception as e:
+            print("Create Case Error")
+            print(e)
+            return tracking_pb2.Status(status=False)
+        
+
         
     
     

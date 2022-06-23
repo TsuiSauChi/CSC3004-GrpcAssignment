@@ -27,7 +27,8 @@ INSERT INTO UserGroups (user_id, group_id)
 
 INSERT INTO Locations (name)
     VALUES
-        ('Orchard Road');
+        ('Orchard Road'),
+        ('Paya Lebar');
 
 INSERT INTO Buildings (location_id, name, shopping_mall)
     VALUES 

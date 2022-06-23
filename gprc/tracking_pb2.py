@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0etracking.proto\x12\tSafeEntry\"\x07\n\x05\x45mpty\"y\n\x04User\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04nric\x18\x02 \x01(\t\x12\x11\n\trole_name\x18\x03 \x01(\t\x12\x1f\n\x05group\x18\x04 \x01(\x0b\x32\x10.SafeEntry.Group\x12!\n\x06status\x18\x05 \x01(\x0b\x32\x11.SafeEntry.Status\"W\n\x05Group\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1d\n\x04user\x18\x02 \x01(\x0b\x32\x0f.SafeEntry.User\x12!\n\x06status\x18\x03 \x01(\x0b\x32\x11.SafeEntry.Status\"\x18\n\x06Status\x12\x0e\n\x06status\x18\x01 \x01(\x08\"9\n\x08Location\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.SafeEntry.Group\x12\x0c\n\x04name\x18\x02 \x01(\t\"^\n\x08\x43heckOut\x12\n\n\x02id\x18\x01 \x01(\x05\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.SafeEntry.Location\x12\x1f\n\x05group\x18\x03 \x01(\x0b\x32\x10.SafeEntry.Group\".\n\tSafeEntry\x12\x0f\n\x07\x63heckin\x18\x02 \x01(\t\x12\x10\n\x08\x63heckout\x18\x03 \x01(\t\"L\n\x04\x43\x61se\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.SafeEntry.User\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.SafeEntry.Location2\xa3\x05\n\x0fTrackingService\x12+\n\x05Login\x12\x0f.SafeEntry.User\x1a\x0f.SafeEntry.User\"\x00\x12<\n\x0fGetAllLocations\x12\x10.SafeEntry.Empty\x1a\x13.SafeEntry.Location\"\x00\x30\x01\x12?\n\x12GetCheckOutOptions\x12\x10.SafeEntry.Empty\x1a\x13.SafeEntry.CheckOut\"\x00\x30\x01\x12\x43\n\x17\x43reateCheckInIndividual\x12\x13.SafeEntry.Location\x1a\x11.SafeEntry.Status\"\x00\x12>\n\x12\x43reateCheckInGroup\x12\x13.SafeEntry.Location\x1a\x11.SafeEntry.Status\"\x00\x12:\n\x0e\x43reateCheckOut\x12\x13.SafeEntry.CheckOut\x1a\x11.SafeEntry.Status\"\x00\x12\x33\n\x0b\x43reateGroup\x12\x10.SafeEntry.Group\x1a\x10.SafeEntry.Group\"\x00\x12\x38\n\x0e\x41\x64\x64UserToGroup\x12\x0f.SafeEntry.User\x1a\x11.SafeEntry.Status\"\x00(\x01\x12:\n\x0cGetSafeEntry\x12\x10.SafeEntry.Empty\x1a\x14.SafeEntry.SafeEntry\"\x00\x30\x01\x12=\n\x15\x43reateReportCovidCase\x12\x0f.SafeEntry.Case\x1a\x11.SafeEntry.Status\"\x00\x12\x39\n\x0fGetGroupsByUser\x12\x10.SafeEntry.Empty\x1a\x10.SafeEntry.Group\"\x00\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0etracking.proto\x12\tSafeEntry\"\x07\n\x05\x45mpty\"y\n\x04User\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04nric\x18\x02 \x01(\t\x12\x11\n\trole_name\x18\x03 \x01(\t\x12\x1f\n\x05group\x18\x04 \x01(\x0b\x32\x10.SafeEntry.Group\x12!\n\x06status\x18\x05 \x01(\x0b\x32\x11.SafeEntry.Status\"W\n\x05Group\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1d\n\x04user\x18\x02 \x01(\x0b\x32\x0f.SafeEntry.User\x12!\n\x06status\x18\x03 \x01(\x0b\x32\x11.SafeEntry.Status\"\x18\n\x06Status\x12\x0e\n\x06status\x18\x01 \x01(\x08\"E\n\x08Location\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x1f\n\x05group\x18\x02 \x01(\x0b\x32\x10.SafeEntry.Group\x12\x0c\n\x04name\x18\x03 \x01(\t\"^\n\x08\x43heckOut\x12\n\n\x02id\x18\x01 \x01(\x05\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.SafeEntry.Location\x12\x1f\n\x05group\x18\x03 \x01(\x0b\x32\x10.SafeEntry.Group\"v\n\tSafeEntry\x12%\n\x08location\x18\x01 \x01(\x0b\x32\x13.SafeEntry.Location\x12\x1f\n\x05group\x18\x02 \x01(\x0b\x32\x10.SafeEntry.Group\x12\x0f\n\x07\x63heckin\x18\x03 \x01(\t\x12\x10\n\x08\x63heckout\x18\x04 \x01(\t\"L\n\x04\x43\x61se\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.SafeEntry.User\x12%\n\x08location\x18\x02 \x01(\x0b\x32\x13.SafeEntry.Location2\xa3\x06\n\x0fTrackingService\x12+\n\x05Login\x12\x0f.SafeEntry.User\x1a\x0f.SafeEntry.User\"\x00\x12<\n\x0fGetAllLocations\x12\x10.SafeEntry.Empty\x1a\x13.SafeEntry.Location\"\x00\x30\x01\x12?\n\x12GetCheckOutOptions\x12\x10.SafeEntry.Empty\x1a\x13.SafeEntry.CheckOut\"\x00\x30\x01\x12\x43\n\x17\x43reateCheckInIndividual\x12\x13.SafeEntry.Location\x1a\x11.SafeEntry.Status\"\x00\x12>\n\x12\x43reateCheckInGroup\x12\x13.SafeEntry.Location\x1a\x11.SafeEntry.Status\"\x00\x12:\n\x0e\x43reateCheckOut\x12\x13.SafeEntry.CheckOut\x1a\x11.SafeEntry.Status\"\x00\x12\x34\n\x0bGetAllUsers\x12\x10.SafeEntry.Empty\x1a\x0f.SafeEntry.User\"\x00\x30\x01\x12\x39\n\x0fGetGroupsByUser\x12\x10.SafeEntry.Empty\x1a\x10.SafeEntry.Group\"\x00\x30\x01\x12\x33\n\x0b\x43reateGroup\x12\x10.SafeEntry.Group\x1a\x10.SafeEntry.Group\"\x00\x12\x38\n\x0e\x41\x64\x64UserToGroup\x12\x0f.SafeEntry.User\x1a\x11.SafeEntry.Status\"\x00(\x01\x12:\n\x0cGetSafeEntry\x12\x10.SafeEntry.Empty\x1a\x14.SafeEntry.SafeEntry\"\x00\x30\x01\x12\x42\n\x16GetCovidLocationByUser\x12\x0f.SafeEntry.User\x1a\x13.SafeEntry.Location\"\x00\x30\x01\x12\x43\n\x15\x43reateReportCovidCase\x12\x13.SafeEntry.Location\x1a\x11.SafeEntry.Status\"\x00(\x01\x62\x06proto3')
 
 
 
@@ -95,13 +95,13 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _STATUS._serialized_start=250
   _STATUS._serialized_end=274
   _LOCATION._serialized_start=276
-  _LOCATION._serialized_end=333
-  _CHECKOUT._serialized_start=335
-  _CHECKOUT._serialized_end=429
-  _SAFEENTRY._serialized_start=431
-  _SAFEENTRY._serialized_end=477
-  _CASE._serialized_start=479
-  _CASE._serialized_end=555
-  _TRACKINGSERVICE._serialized_start=558
-  _TRACKINGSERVICE._serialized_end=1233
+  _LOCATION._serialized_end=345
+  _CHECKOUT._serialized_start=347
+  _CHECKOUT._serialized_end=441
+  _SAFEENTRY._serialized_start=443
+  _SAFEENTRY._serialized_end=561
+  _CASE._serialized_start=563
+  _CASE._serialized_end=639
+  _TRACKINGSERVICE._serialized_start=642
+  _TRACKINGSERVICE._serialized_end=1445
 # @@protoc_insertion_point(module_scope)
