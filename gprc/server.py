@@ -26,10 +26,6 @@ conn = pg.connect(
 
 cur =  conn.cursor()
 
-# Set currentuser
-#currentuser = None
-currentuser = 'user1'
-
 class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     
     # Condition: What if user does not exist; upsert into the database
@@ -44,15 +40,14 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
         if result is not None:
             # Set User Session
-            currentuser = result[1]
-            print(currentuser + " is logged in")
+            print(result[1] + " is logged in")
             return tracking_pb2.User(
-                name=currentuser, 
+                name=result[1], 
                 role_name=result[0], 
                 status = tracking_pb2.Status(status=True))
         else:
             return tracking_pb2.User(
-                status = tracking_pb2.Status(status=True)
+                status = tracking_pb2.Status(status=False)
             )
 
     # Get All Locations 
@@ -74,7 +69,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             INNER JOIN Users u  
                 ON ug.user_id = u.id 
             WHERE u.name = %s;
-        """, (currentuser,))
+        """, (request.name,))
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.Group(
@@ -92,14 +87,14 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             cur.execute("INSERT INTO Groups (name) VALUES (%s) returning id;", (request.name,))
             group_id = cur.fetchone()[0]
             conn.commit()
-            # Add currentuser into new group
+            # Add login user into new group
             try:
                 cur.execute("""
                 INSERT INTO UserGroups (user_id, group_id) VALUES (
                     (SELECT id FROM Users WHERE name = %s),
                     %s
                 ) 
-                """, (currentuser, group_id))
+                """, (request.user.name, group_id))
                 conn.commit()
                 return tracking_pb2.Group(
                         name = request.name,
@@ -116,7 +111,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                 INNER JOIN Roles r 
                     ON u.role_id = r.id 
                 WHERE name <> %s and r.rolename = 'Normal';
-        """, (currentuser,))
+        """, (request.name,))
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.User(name=row[0])
@@ -150,7 +145,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                             (SELECT id FROM Users WHERE name = %s),
                             (SELECT id FROM Locations WHERE name = %s)
                         );
-                        """, (currentuser, request.name))
+                        """, (request.user.name, request.name))
             conn.commit()
             return tracking_pb2.Status(status=True)
         except Exception as e:
@@ -201,7 +196,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             INNER JOIN Locations l 
                 ON l.id = c.location_id
             WHERE c.check_out IS NULL and u.name = %s;
-        """, (currentuser, ))
+        """, (request.name, ))
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.CheckOut(
@@ -222,7 +217,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             INNER JOIN Groups g 
                 ON c.group_id = g.id
             WHERE c.check_out IS NULL and u.name = %s;
-        """, (currentuser, ))
+        """, (request.name, ))
         result = cur.fetchall()
         for row in result:
             print(row[1].strftime("%m/%d/%Y, %H:%M:%S"))
@@ -284,7 +279,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                     WHERE u.id = (
                         SELECT id from Users 
                             WHERE name = %s
-                    );""", (currentuser,))
+                    );""", (request.name,))
 
         result = cur.fetchall()
         for row in result:
@@ -329,10 +324,11 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             print("Create Case Error")
             print(e)
             return tracking_pb2.Status(status=False)
-        
+    
+    # Get Notificiation By User
     def GetAllNotificiationByUser(self, request, context):
         cur.execute("""
-        SELECT u.name, l.name, ca.date, c.check_in FROM Cases ca
+        SELECT distinct u.name, l.name, ca.date, c.check_in FROM Cases ca
             INNER JOIN Locations l 
                 ON l.id = ca.location_id
             INNER JOIN Checkinouts c 
@@ -341,7 +337,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                 ON u.id = c.user_id
             WHERE ca.date::DATE - 14 <= c.check_in
             AND u.name = %s;
-        """, (currentuser,))
+        """, (request.name,))
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.Notificiation(
@@ -362,7 +358,3 @@ def serve():
     server.wait_for_termination()
 
 serve()
-
-
-# Note:
-# Check in to Buildings or stores

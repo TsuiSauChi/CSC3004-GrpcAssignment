@@ -10,25 +10,25 @@ service TrackingService  {
 
     rpc GetAllLocations(Empty) returns (stream Location) {}
 
-    rpc GetCheckOutOptionsIndividual(Empty) returns (stream CheckOut) {}
-    rpc GetCheckOutOptionsGroup(Empty) returns (stream CheckOut) {}
-
     rpc CreateCheckInIndividual(Location) returns (Status) {}
     rpc CreateCheckInGroup(Location) returns (Status) {}
     rpc CreateCheckOutIndividual(CheckOut) returns (Status) {}
     rpc CreateCheckOutGroup(CheckOut) returns (Status) {}
 
-    rpc GetAllUsers(Empty) returns (stream User) {}
-    rpc GetGroupsByUser(Empty) returns (stream Group) {}
+    rpc GetCheckOutOptionsIndividual(User) returns (stream CheckOut) {}
+    rpc GetCheckOutOptionsGroup(User) returns (stream CheckOut) {}
+
+    rpc GetAllUsers(User) returns (stream User) {}
+    rpc GetGroupsByUser(User) returns (stream Group) {}
     rpc CreateGroup(Group) returns (Group) {}
     rpc AddUserToGroup(stream User) returns (Status) {}
     
-    rpc GetSafeEntry(Empty) returns (stream SafeEntry) {}
+    rpc GetSafeEntry(User) returns (stream SafeEntry) {}
     
     rpc GetCovidLocationByUser (User) returns (stream Location) {}
     rpc CreateReportCovidCase (stream Location) returns (Status) {}
 
-    rpc GetAllNotificiationByUser (Empty) returns (stream Notificiation) {}
+    rpc GetAllNotificiationByUser (User) returns (stream Notificiation) {}
 }
 
 message Empty {
@@ -54,9 +54,10 @@ message Status {
 }
 
 message Location {
-    int32 id = 1;
-    Group group = 2;
-    string name = 3;
+    User user = 1;
+    int32 id = 2;
+    Group group = 3;
+    string name = 4;
 }
 
 message CheckOut {

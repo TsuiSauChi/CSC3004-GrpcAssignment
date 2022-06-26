@@ -14,11 +14,11 @@ print("Weclome to SafeEntry")
 print()
 print("Login")
 
-# name = input("Enter your Name: ")
-# nric = input("Enter your NRIC: ")
+name = input("Enter your Name: ")
+nric = input("Enter your NRIC: ")
 #name = 'officer'
-name = 'user1'
-nric = '98765432'
+# name = 'user1'
+# nric = '98765432'
 role = None
 location = None
 
@@ -27,7 +27,7 @@ option = None
 
 def login(name, nric):
     auth = stub.Login(tracking_pb2.User(name=name,nric=nric))
-    if auth.status.status == "F":
+    if auth.status.status is False:
         print("Incorrect Login Details")
         return None
     else:
@@ -65,6 +65,7 @@ def getAllLocations():
 # Note: Here has location
 def checkInIndivudal(location):
     result = stub.CreateCheckInIndividual(tracking_pb2.Location(
+        user = tracking_pb2.User(name = name),
         name = location
     ))
     if result.status is False:
@@ -90,7 +91,7 @@ def checkInGroup(location, group):
 
 
 def selectGroup():
-    groups_list = list(stub.GetGroupsByUser(tracking_pb2.Empty()))
+    groups_list = list(stub.GetGroupsByUser(tracking_pb2.User(name=name)))
     print()
     print("Listing Groups")
     for count, group in enumerate(groups_list):
@@ -117,7 +118,9 @@ def getCheckOutOptions():
     print()
     print("### INDIVIDUAL CHECK OUT OPTION ###")
     print("###################################")
-    checkout_list_individual = list(stub.GetCheckOutOptionsIndividual(tracking_pb2.Empty()))
+    checkout_list_individual = list(stub.GetCheckOutOptionsIndividual(
+        tracking_pb2.User(name = name))
+    )
     # Counter to Count No of Options; Individual + Group
     counter = 0
     for check_out in checkout_list_individual:
@@ -128,7 +131,9 @@ def getCheckOutOptions():
 
     print("### GROUP CHECK OUT ###")
     print("#######################")
-    check_out_group = list(stub.GetCheckOutOptionsGroup(tracking_pb2.Empty()))
+    check_out_group = list(stub.GetCheckOutOptionsGroup(
+        tracking_pb2.User(name = name))
+    )
     for check_out in check_out_group:
         counter += 1
         print(str(counter) + " Location: "  + check_out.location.name)
@@ -144,7 +149,7 @@ def getCheckOutOptions():
         print("Enter a option to check out to")
         i = input("Select Option 1 to " + str(counter) + ": ")
     
-    if int(i) > counter and int(i) <= 0 :
+    if int(i) > counter or int(i) <= 0 :
         return None
     else:
         print("Success")
@@ -185,7 +190,9 @@ def createGroup(group_name):
     print()
     group_name = input("Enter the new group name: ")
     print("Enetered group name", group_name)
-    result = stub.CreateGroup(tracking_pb2.Group(name=group_name))
+    result = stub.CreateGroup(tracking_pb2.Group(
+        name = group_name,
+        user = tracking_pb2.User(name = name)))
     if(result.status.status):
         addUserToGroup(result.name)
         return None
@@ -254,12 +261,12 @@ def selectUser():
         return user_list[int(i)-1].name
 
 def getAllUser():
-    return list(stub.GetAllUsers(tracking_pb2.Empty()))
+    return list(stub.GetAllUsers(tracking_pb2.User(name = name)))
 
 def getSafeEntryHistory():
     print("### SAFEENTRY HISTORY ###")
     print("#########################")
-    for count, row in enumerate(stub.GetSafeEntry(tracking_pb2.Empty())):
+    for count, row in enumerate(stub.GetSafeEntry(tracking_pb2.User(name = name))):
         print(str(count+1) + ": Location: " + row.location.name)
         print("Check in: " + row.checkin)
         print("Check out: " + row.checkout)
@@ -279,19 +286,16 @@ def createCovidCase(location_handler):
     else:
         # Need to get id from LOCATION HERE
         def handler():
-            print("Location Handler", location_handler)
             for id in [location_handler]:
-                print("Location id", id)
                 yield tracking_pb2.Location(id=id)
         status = stub.CreateReportCovidCase(handler())
-        print(status)
         return status.status
 
 def getNotificiationByUser():
     print()
     print("### LISTING NOTIFICIATION OF COVID CONTACT ###")
     print("#############################")
-    for count, row in enumerate(stub.GetAllNotificiationByUser(tracking_pb2.Empty())):
+    for count, row in enumerate(stub.GetAllNotificiationByUser(tracking_pb2.User(name=name))):
         print(str(count+1) + " : Location: " + row.location.name)
         print("Case Occurance: " + row.checkin)
         print("Check in Date: " + row.case_date)
@@ -299,105 +303,108 @@ def getNotificiationByUser():
 
 role = login(name, nric)
 
-while loop: 
-    print()
-    print("##########")
-
-    # Options depending on user roles
-    if role == "Normal":
-        print("Options")
-        print("1: Check in ")
-        print("2: Check Out")
-        print("3: Create Group")
-        print("4: List SafeEntry")
-        print("5: Self Report Covid Case")
-        print("6: List Covid Notificiation")
-        print("7: Exit Program")
-
-        option = input("Enter your Option ")
-
+if role is not None:
+    
+    while loop: 
         print()
-    elif role == "Officer":
-        print("Option")
-        print("1. Create Covid Case")
-        print("2: Exit Program")
+        print("##########")
 
-        option = input("Enter your Option ")
-        print()
+        # Options depending on user roles
+        if role == "Normal":
+            print("Options")
+            print("1: Check in ")
+            print("2: Check Out")
+            print("3: Create Group")
+            print("4: List SafeEntry")
+            print("5: Self Report Covid Case")
+            print("6: List Covid Notificiation")
+            print("7: Exit Program")
 
-    print("Option Selected: " + option)
-    print("Current role " + role)
+            option = input("Enter your Option ")
 
-    # Option: Check in 
-    if option == "1" and role == "Normal":
-        # Select Location
-        location = selectLocation()
-        if location is None:
-            print("Invalid Location")
-            loop = False
-        else:
-            # Check whether check in is individual or group
-            groupcheckin = input("Would like to Group Check in? (y/n) ")
             print()
-            if groupcheckin == "y":
-                # Perform Query to Select groups
-                group = selectGroup() 
-                if group is None:
-                    print("Invalid Group")
-                    loop = False
-                else:
-                    # Perform Check-in for Group
-                    status = checkInGroup(location.name, group)
+        elif role == "Officer":
+            print("Option")
+            print("1. Create Covid Case")
+            print("2: Exit Program")
+
+            option = input("Enter your Option ")
+            print()
+
+        print("Option Selected: " + option)
+        print("Current role " + role)
+
+        # Option: Check in 
+        if option == "1" and role == "Normal":
+            # Select Location
+            location = selectLocation()
+            if location is None:
+                print("Invalid Location")
+                loop = False
+            else:
+                # Check whether check in is individual or group
+                groupcheckin = input("Would like to Group Check in? (y/n) ")
+                print()
+                if groupcheckin == "y":
+                    # Perform Query to Select groups
+                    group = selectGroup() 
+                    if group is None:
+                        print("Invalid Group")
+                        loop = False
+                    else:
+                        # Perform Check-in for Group
+                        status = checkInGroup(location.name, group)
+                        if status is False:
+                            loop = False
+
+                elif groupcheckin == "n":
+                    # Perform Check-in for Individual
+                    status = checkInIndivudal(location.name)
                     if status is False:
                         loop = False
 
-            elif groupcheckin == "n":
-                # Perform Check-in for Individual
-                status = checkInIndivudal(location.name)
-                if status is False:
-                    loop = False
+                else:
+                    print("Please Enter a correct option; either y or no")
+                    loop = True
 
+        # Option: Check out
+        elif option == "2" and role == "Normal":
+            status = getCheckOutOptions()
+            if status is None:
+                print("Invalid Check out option")
+                loop = False
             else:
-                print("Please Enter a correct option; either y or no")
-                loop = True
+                continue 
 
-    # Option: Check out
-    elif option == "2" and role == "Normal":
-        status = getCheckOutOptions()
-        if status is False:
-            loop = False
+        # Option: Create Group
+        elif option == "3" and role == "Normal":
+            createGroup(group_name=None) 
+        
+        elif option == "4" and role == "Normal":
+            status = getSafeEntryHistory()
+            if (status == False):
+                print("Error during Self Reporting Operation")
+                loop = False
+
+        elif option == "5" and role == "Normal":
+            getCovidLocationByUser(name)
+
+        elif option == "6" and role == "Normal":
+            print("Notificiation")
+            getNotificiationByUser()
+
+        elif option == "1" and role == "Officer":
+            print("Select Location that has Covid Cases")
+            location = selectLocation()
+            createCovidCase(location.id)
+
+        elif (option == "7" and role == "Normal") or (option == "2" and role == "Officer"):
+            print("Existing Program")
+            loop = False 
+
         else:
-            continue 
-
-    # Option: Create Group
-    elif option == "3" and role == "Normal":
-        createGroup(group_name=None) 
-    
-    elif option == "4" and role == "Normal":
-        status = getSafeEntryHistory()
-        if (status == False):
-            print("Error during Self Reporting Operation")
+            print("An Error has occured. Please Re-run Program")
             loop = False
-
-    elif option == "5" and role == "Normal":
-        getCovidLocationByUser(name)
-
-    elif option == "6" and role == "Normal":
-        print("Notificiation")
-        getNotificiationByUser()
-
-    elif option == "1" and role == "Officer":
-        print("Select Location that has Covid Cases")
-        location = selectLocation()
-        createCovidCase(location.id)
-
-    elif (option == "7" and role == "Normal") or (option == "2" and role == "Officer"):
-        print("Existing Program")
-        loop = False 
-
-    else:
-        print("An Error has occured. Please Re-run Program")
-        loop = False
 
 
 # Conidition: Check input is int or str
