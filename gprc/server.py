@@ -9,26 +9,17 @@ import tracking_pb2_grpc
 import psycopg2 as pg
 
 # Database Connection Config
-### NEED TO REFCATOR HERE ###
-# conn = pg.connect(
-#     host="174.138.23.75",
-#     database="testing",
-#     user="postgres",
-#     password="cl0udplus!"
-# )
-
 conn = pg.connect(
-    host="localhost",
-    database="grpc",
-    user="jamestsui",
-    password="password"
+    host="174.138.23.75",
+    database="testing",
+    user="postgres",
+    password="cl0udplus!"
 )
 
 cur =  conn.cursor()
 
 class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     
-    # Condition: What if user does not exist; upsert into the database
     def Login(self, request, context):
         cur.execute("""
         SELECT r.rolename, u.name FROM Users u 
