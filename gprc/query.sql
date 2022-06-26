@@ -139,3 +139,29 @@ SELECT l.name, c.check_in, g.name FROM Users u
 SELECT * FROM Checkinouts c 
     INNER JOIN Groups g 
         ON c.group_id = g.id;
+
+UPDATE Checkinouts 
+            SET check_out = CURRENT_TIMESTAMP
+WHERE group_id = (
+    SELECT id FROM Groups WHERE name = %s
+) and location_id = (
+    SELECT id FROM Locations WHERE name = %s
+) and check_in = %s
+
+UPDATE Checkinouts 
+            SET check_out = CURRENT_TIMESTAMP
+WHERE group_id = (
+    SELECT id FROM Groups WHERE name = 'group1'
+) and location_id = (
+    SELECT id FROM Locations WHERE name = 'Orchard Road'
+) and check_in = '2022-06-26 13:10:01';
+
+SELECT l.name, c.check_in, c.check_out from Checkinouts c
+INNER JOIN Users u
+    ON c.user_id = u.id
+INNER JOIN Locations l 
+    ON c.location_id = l.id
+WHERE u.id = (
+    SELECT id from Users 
+        WHERE name = 'user1'
+);

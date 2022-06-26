@@ -150,23 +150,37 @@ def getCheckOutOptions():
         print("Success")
         if int(i) <= len(checkout_list_individual):
             # Check out indiviudal
-            status = checkOut(checkout_list_individual[int(i)-1].id)
+            status = checkOutIndivudal(checkout_list_individual[int(i)-1].id)
             return status
         else:
-            # Check out group
-            pass
+            # Offset the option from the check out individual
+            offset = int(i) - len(checkout_list_individual) - 1
+            status = checkOutGroup(check_out_group[offset])
+            return status
         
 
-def checkOut(id):
+def checkOutIndivudal(id):
     result = stub.CreateCheckOutIndividual(tracking_pb2.CheckOut(id=id))
     if result.status is False:
-        print("Check out Failed")
+        print("Individual Check out Failed")
         return False
     else:
-        print("Group out succesful")
+        print("Individual Check out succesful")
         return True
 
-# Come back here
+def checkOutGroup(checkOut):
+    result = stub.CreateCheckOutGroup(tracking_pb2.CheckOut(
+       location = tracking_pb2.Location(name = checkOut.location.name),
+       check_in = checkOut.check_in,
+       group = tracking_pb2.Group(name = checkOut.group.name)
+    ))
+    if result.status is False:
+        print("Group Check out Failed")
+        return False
+    else:
+        print("Group Check out succesful")
+        return True
+
 def createGroup(group_name):
     print()
     group_name = input("Enter the new group name: ")
@@ -249,10 +263,6 @@ def getSafeEntryHistory():
         print(str(count+1) + ": Location: " + row.location.name)
         print("Check in: " + row.checkin)
         print("Check out: " + row.checkout)
-        if row.group.name:
-            print("Group name: " + row.group.name)
-        else:
-            print("Individual")
         print()
 
 def getCovidLocationByUser(name):
@@ -344,13 +354,11 @@ while loop:
 
     # Option: Check out
     elif option == "2" and role == "Normal":
-        check_out_id = getCheckOutOptions()
-        if check_out_id is None:
-            print("Invalid Check out Option")
+        status = getCheckOutOptions()
+        if status is False:
             loop = False
         else:
-            print("Check out option::: ", check_out_id)
-            status = checkOut(check_out_id)
+            continue 
 
     # Option: Create Group
     elif option == "3" and role == "Normal":

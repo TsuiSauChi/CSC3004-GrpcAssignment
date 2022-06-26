@@ -10,19 +10,19 @@ import psycopg2 as pg
 
 # Database Connection Config
 ### NEED TO REFCATOR HERE ###
-# conn = pg.connect(
-#     host="174.138.23.75",
-#     database="testing",
-#     user="postgres",
-#     password="cl0udplus!"
-# )
-
 conn = pg.connect(
-    host="localhost",
-    database="grpc",
-    user="jamestsui",
-    password="password"
+    host="174.138.23.75",
+    database="testing",
+    user="postgres",
+    password="cl0udplus!"
 )
+
+# conn = pg.connect(
+#     host="localhost",
+#     database="grpc",
+#     user="jamestsui",
+#     password="password"
+# )
 
 cur =  conn.cursor()
 
@@ -239,6 +239,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
         """, (currentuser, ))
         result = cur.fetchall()
         for row in result:
+            print(row[1].strftime("%m/%d/%Y, %H:%M:%S"))
             yield tracking_pb2.CheckOut(
                 location = tracking_pb2.Location(
                     name = row[0]
@@ -264,40 +265,52 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             print(e)
             return tracking_pb2.Status(status=False)
 
-    # Create Check Out For Group
-    # Need Group name as input
-    def CreateCheckInGroup(self, request, context):
-        cur.execute("""
-        """)
+    def CreateCheckOutGroup(self, request, context):
+        try:
+            datetime_object = datetime.strptime(request.check_in, "%m/%d/%Y, %H:%M:%S")
+            print(datetime_object)
+
+            cur.execute("""
+                UPDATE Checkinouts 
+                SET check_out = CURRENT_TIMESTAMP
+                WHERE group_id = (
+                    SELECT id FROM Groups WHERE name = %s
+                ) and location_id = (
+                    SELECT id FROM Locations WHERE name = %s
+                ) and check_in = %s
+            """, (request.group.name, request.location.name, datetime_object))
+
+            conn.commit()
+            return tracking_pb2.Status(status = True)
+        except Exception as e:
+            print("Check out Group Error")
+            print(e)
+            return tracking_pb2.Status(status=False)
         
 
     # Get Safe Entry Details By User; Need Get Location Info
     def GetSafeEntry(self, request, context):
-        cur.execute("""SELECT l.name, c.check_in, c.check_out, g.name from Checkinouts c
-                        INNER JOIN Users u
-                            ON c.user_id = u.id
-                        INNER JOIN Locations l 
-                            ON c.location_id = l.id
-                        LEFT JOIN Groups g 
-                            ON c.group_id = g.id
-                        WHERE u.id = (
-                            SELECT id from Users 
-                                WHERE name = %s
-                        );""", (currentuser))
+        cur.execute("""SELECT l.name, c.check_in, c.check_out from Checkinouts c
+                    INNER JOIN Users u
+                        ON c.user_id = u.id
+                    INNER JOIN Locations l 
+                        ON c.location_id = l.id
+                    WHERE u.id = (
+                        SELECT id from Users 
+                            WHERE name = %s
+                    );""", (currentuser,))
 
         result = cur.fetchall()
         for row in result:
             if row[2] is None:
                 yield tracking_pb2.SafeEntry(
                     location = tracking_pb2.Location(name = row[0]),
-                    group = tracking_pb2.Group(name = row[3]),
                     checkin = row[1].strftime("%m/%d/%Y, %H:%M:%S"), 
                     checkout = ''
                 )
             else:  
                 yield tracking_pb2.SafeEntry(
                     location = tracking_pb2.Location(name = row[0]),
-                    group = tracking_pb2.Group(name = row[3]),
                     checkin = row[1].strftime("%m/%d/%Y, %H:%M:%S"), 
                     checkout = row[2].strftime("%m/%d/%Y, %H:%M:%S")
                 )
