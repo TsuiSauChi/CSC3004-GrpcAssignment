@@ -1,5 +1,6 @@
 import grpc
 from concurrent import futures
+from datetime import datetime
 
 import tracking_pb2
 import tracking_pb2_grpc
@@ -61,6 +62,7 @@ def getAllLocations():
     print("Listing All Location")
     return list(stub.GetAllLocations(tracking_pb2.Empty()))
 
+# Note: Here has location
 def checkInIndivudal(location):
     result = stub.CreateCheckInIndividual(tracking_pb2.Location(
         name = location
@@ -72,7 +74,9 @@ def checkInIndivudal(location):
         print("Individual Checked in succesfully to " + location)
         return True
 
+# Note: Here has location and group
 def checkInGroup(location, group):
+    print("Location and group", location, group)
     result = stub.CreateCheckInGroup(tracking_pb2.Location(
         name = location,
         group = tracking_pb2.Group(name = group)
@@ -108,32 +112,53 @@ def selectGroup():
         return groups_list[int(i)-1].name
 
 def getCheckOutOptions():
-    checkout_list = list(stub.GetCheckOutOptions(tracking_pb2.Empty()))
     print()
     print("Listing Check Out Options")
-    for count, check_out in enumerate(checkout_list):
-        if (check_out.group.name):
-            print(str(count+1) + ": Group " + check_out.group.name + "; Location = " + check_out.location.name)
-        else:
-            print(str(count+1) + ": Indivudal Check in;  " + " Location = "  + check_out.location.name)
     print()
+    print("### INDIVIDUAL CHECK OUT OPTION ###")
+    print("###################################")
+    checkout_list_individual = list(stub.GetCheckOutOptionsIndividual(tracking_pb2.Empty()))
+    # Counter to Count No of Options; Individual + Group
+    counter = 0
+    for check_out in checkout_list_individual:
+        counter += 1
+        print(str(counter) + " Location: "  + check_out.location.name)
+        print("Check-in: " + str(check_out.check_in))
+        print()
+
+    print("### GROUP CHECK OUT ###")
+    print("#######################")
+    check_out_group = list(stub.GetCheckOutOptionsGroup(tracking_pb2.Empty()))
+    for check_out in check_out_group:
+        counter += 1
+        print(str(counter) + " Location: "  + check_out.location.name)
+        print("Check-in: " + str(check_out.check_in))
+        print("Group: " + check_out.group.name)
+        print()
+
     # If no check out options available
-    if str(len(checkout_list)) == "0":
+    if counter == 0:
         print("No Checkout Options Available")
         return None
-    # Get user input on check out options
     else:
         print("Enter a option to check out to")
-        i = input("Select Option 1 to " + str(len(checkout_list)) + ": ")
-    if int(i) > len(checkout_list):
+        i = input("Select Option 1 to " + str(counter) + ": ")
+    
+    if int(i) > counter and int(i) <= 0 :
         return None
     else:
-        print()
-        print("Selected Check out Option: " + i)
-        return checkout_list[int(i)-1].id
+        print("Success")
+        if int(i) <= len(checkout_list_individual):
+            # Check out indiviudal
+            status = checkOut(checkout_list_individual[int(i)-1].id)
+            return status
+        else:
+            # Check out group
+            pass
+        
 
 def checkOut(id):
-    result = stub.CreateCheckOut(tracking_pb2.CheckOut(id=id))
+    result = stub.CreateCheckOutIndividual(tracking_pb2.CheckOut(id=id))
     if result.status is False:
         print("Check out Failed")
         return False
@@ -354,4 +379,4 @@ while loop:
         loop = False
 
 
-        
+# Conidition: Check input is int or str

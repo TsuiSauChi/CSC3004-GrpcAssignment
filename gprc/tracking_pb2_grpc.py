@@ -25,8 +25,13 @@ class TrackingServiceStub(object):
                 request_serializer=tracking__pb2.Empty.SerializeToString,
                 response_deserializer=tracking__pb2.Location.FromString,
                 )
-        self.GetCheckOutOptions = channel.unary_stream(
-                '/SafeEntry.TrackingService/GetCheckOutOptions',
+        self.GetCheckOutOptionsIndividual = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetCheckOutOptionsIndividual',
+                request_serializer=tracking__pb2.Empty.SerializeToString,
+                response_deserializer=tracking__pb2.CheckOut.FromString,
+                )
+        self.GetCheckOutOptionsGroup = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetCheckOutOptionsGroup',
                 request_serializer=tracking__pb2.Empty.SerializeToString,
                 response_deserializer=tracking__pb2.CheckOut.FromString,
                 )
@@ -40,8 +45,13 @@ class TrackingServiceStub(object):
                 request_serializer=tracking__pb2.Location.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
-        self.CreateCheckOut = channel.unary_unary(
-                '/SafeEntry.TrackingService/CreateCheckOut',
+        self.CreateCheckOutIndividual = channel.unary_unary(
+                '/SafeEntry.TrackingService/CreateCheckOutIndividual',
+                request_serializer=tracking__pb2.CheckOut.SerializeToString,
+                response_deserializer=tracking__pb2.Status.FromString,
+                )
+        self.CreateCheckOutGroup = channel.unary_unary(
+                '/SafeEntry.TrackingService/CreateCheckOutGroup',
                 request_serializer=tracking__pb2.CheckOut.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
@@ -98,7 +108,13 @@ class TrackingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetCheckOutOptions(self, request, context):
+    def GetCheckOutOptionsIndividual(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetCheckOutOptionsGroup(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -116,7 +132,13 @@ class TrackingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateCheckOut(self, request, context):
+    def CreateCheckOutIndividual(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateCheckOutGroup(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -177,8 +199,13 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     request_deserializer=tracking__pb2.Empty.FromString,
                     response_serializer=tracking__pb2.Location.SerializeToString,
             ),
-            'GetCheckOutOptions': grpc.unary_stream_rpc_method_handler(
-                    servicer.GetCheckOutOptions,
+            'GetCheckOutOptionsIndividual': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetCheckOutOptionsIndividual,
+                    request_deserializer=tracking__pb2.Empty.FromString,
+                    response_serializer=tracking__pb2.CheckOut.SerializeToString,
+            ),
+            'GetCheckOutOptionsGroup': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetCheckOutOptionsGroup,
                     request_deserializer=tracking__pb2.Empty.FromString,
                     response_serializer=tracking__pb2.CheckOut.SerializeToString,
             ),
@@ -192,8 +219,13 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     request_deserializer=tracking__pb2.Location.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
-            'CreateCheckOut': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateCheckOut,
+            'CreateCheckOutIndividual': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateCheckOutIndividual,
+                    request_deserializer=tracking__pb2.CheckOut.FromString,
+                    response_serializer=tracking__pb2.Status.SerializeToString,
+            ),
+            'CreateCheckOutGroup': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateCheckOutGroup,
                     request_deserializer=tracking__pb2.CheckOut.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
@@ -278,7 +310,7 @@ class TrackingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetCheckOutOptions(request,
+    def GetCheckOutOptionsIndividual(request,
             target,
             options=(),
             channel_credentials=None,
@@ -288,7 +320,24 @@ class TrackingService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetCheckOutOptions',
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetCheckOutOptionsIndividual',
+            tracking__pb2.Empty.SerializeToString,
+            tracking__pb2.CheckOut.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetCheckOutOptionsGroup(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetCheckOutOptionsGroup',
             tracking__pb2.Empty.SerializeToString,
             tracking__pb2.CheckOut.FromString,
             options, channel_credentials,
@@ -329,7 +378,7 @@ class TrackingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CreateCheckOut(request,
+    def CreateCheckOutIndividual(request,
             target,
             options=(),
             channel_credentials=None,
@@ -339,7 +388,24 @@ class TrackingService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/CreateCheckOut',
+        return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/CreateCheckOutIndividual',
+            tracking__pb2.CheckOut.SerializeToString,
+            tracking__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateCheckOutGroup(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/CreateCheckOutGroup',
             tracking__pb2.CheckOut.SerializeToString,
             tracking__pb2.Status.FromString,
             options, channel_credentials,

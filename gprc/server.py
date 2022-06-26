@@ -10,19 +10,19 @@ import psycopg2 as pg
 
 # Database Connection Config
 ### NEED TO REFCATOR HERE ###
-conn = pg.connect(
-    host="174.138.23.75",
-    database="testing",
-    user="postgres",
-    password="cl0udplus!"
-)
-
 # conn = pg.connect(
-#     host="localhost",
-#     database="grpc2",
-#     user="jamestsui",
-#     password="password"
+#     host="174.138.23.75",
+#     database="testing",
+#     user="postgres",
+#     password="cl0udplus!"
 # )
+
+conn = pg.connect(
+    host="localhost",
+    database="grpc",
+    user="jamestsui",
+    password="password"
+)
 
 cur =  conn.cursor()
 
@@ -174,49 +174,83 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Create Check In For Group
     def CreateCheckInGroup(self, request, context):
+        print("Request", request)
         try:
-            print("Check in Individual Request", request)
             cur.execute("""
-                INSERT INTO Checkinouts (user_id, group_id, location_id)
-                            VALUES (
-                                (SELECT id FROM Users WHERE name = %s),
-                                (SELECT id FROM Groups WHERE name = %s),
-                                (SELECT id FROM Locations WHERE name = %s)
+            SELECT DISTINCT u.id, g.id FROM Users u
+                INNER JOIN UserGroups ug 
+                    ON u.id = ug.user_id 
+                INNER JOIN Groups g 
+                    ON g.id = ug.group_id 
+                WHERE g.id = (
+                    SELECT id FROM Groups 
+                        WHERE name = %s 
                 );
-            """, (currentuser, request.group.name , request.name))
+            """,(request.group.name,))
+
+            users = cur.fetchall()
+            print("Users", users)
+            for row in users:
+                cur.execute("""
+                        INSERT INTO Checkinouts (user_id, group_id, location_id)
+                        VALUES (
+                            %s,
+                            %s,
+                            (SELECT id FROM Locations WHERE name = %s)
+                        );
+                """, (row[0], row[1], request.name))
             conn.commit()
             return tracking_pb2.Status(status=True)
         except Exception as e:
-            print("Check in Individual Error")
+            print("Check in group error")
             print(e)
             return tracking_pb2.Status(status=False)
-
+    
     # Get All possible Check-out options
-    def GetCheckOutOptions(self, request, context):
+    def GetCheckOutOptionsIndividual(self, request, context):
         cur.execute("""
-            SELECT c.id, g.name, l.name from Checkinouts c 
-                INNER JOIN Locations l 
-                    ON l.id = c.location_id
-                INNER JOIN Users u 
-                    ON c.user_id = u.id 
-                LEFT JOIN Groups g 
-                    ON c.group_id = g.id
-            WHERE c.check_out IS NULL;
-        """)
+        SELECT c.id, l.name, c.check_in FROM Users u 
+            INNER JOIN Checkinouts c 
+                ON u.id = c.user_id
+            INNER JOIN Locations l 
+                ON l.id = c.location_id
+            WHERE c.check_out IS NULL and u.name = %s;
+        """, (currentuser, ))
         result = cur.fetchall()
         for row in result:
             yield tracking_pb2.CheckOut(
                 id = row[0],
                 location = tracking_pb2.Location(
-                    name = row[2]
-                ),
-                group = tracking_pb2.Group(
                     name = row[1]
+                ),
+                check_in = row[2].strftime("%m/%d/%Y, %H:%M:%S")
+            )
+
+    def GetCheckOutOptionsGroup(self, request, context):
+        cur.execute("""
+        SELECT l.name, c.check_in, g.name FROM Users u 
+            INNER JOIN Checkinouts c 
+                ON u.id = c.user_id
+            INNER JOIN Locations l 
+                ON l.id = c.location_id
+            INNER JOIN Groups g 
+                ON c.group_id = g.id
+            WHERE c.check_out IS NULL and u.name = %s;
+        """, (currentuser, ))
+        result = cur.fetchall()
+        for row in result:
+            yield tracking_pb2.CheckOut(
+                location = tracking_pb2.Location(
+                    name = row[0]
+                ),
+                check_in = row[1].strftime("%m/%d/%Y, %H:%M:%S"),
+                group = tracking_pb2.Group(
+                    name = row[2]
                 )
             )
 
     # Create Check Out For Individual 
-    def CreateCheckOut(self, request, context):
+    def CreateCheckOutIndividual(self, request, context):
         try:
             cur.execute("""
             UPDATE Checkinouts c
@@ -230,6 +264,13 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             print(e)
             return tracking_pb2.Status(status=False)
 
+    # Create Check Out For Group
+    # Need Group name as input
+    def CreateCheckInGroup(self, request, context):
+        cur.execute("""
+        """)
+        
+
     # Get Safe Entry Details By User; Need Get Location Info
     def GetSafeEntry(self, request, context):
         cur.execute("""SELECT l.name, c.check_in, c.check_out, g.name from Checkinouts c
@@ -241,7 +282,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
                             ON c.group_id = g.id
                         WHERE u.id = (
                             SELECT id from Users 
-                                WHERE name = 'user1'
+                                WHERE name = %s
                         );""", (currentuser))
 
         result = cur.fetchall()
@@ -277,14 +318,10 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             yield tracking_pb2.Location(id=row[0])
 
     # Create a Covid Case
-    # Condition: Error Tracking
     def CreateReportCovidCase(self, request_iterator, context):
-        print(len(request_iterator))
-        for row in list(request_iterator):
-            print("Testing")
+        print(request_iterator)
         try:
-            for row in request_iterator:
-                print("Hello WOrld : ", row.id)
+            for row in list(request_iterator):
                 cur.execute("""
                 INSERT INTO Cases (location_id) VALUES (%s);
                 """, (row.id,))
@@ -309,3 +346,7 @@ def serve():
     server.wait_for_termination()
 
 serve()
+
+
+# Note:
+# Check in to Buildings or stores

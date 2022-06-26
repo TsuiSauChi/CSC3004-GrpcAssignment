@@ -10,11 +10,13 @@ service TrackingService  {
 
     rpc GetAllLocations(Empty) returns (stream Location) {}
 
-    rpc GetCheckOutOptions(Empty) returns (stream CheckOut) {}
+    rpc GetCheckOutOptionsIndividual(Empty) returns (stream CheckOut) {}
+    rpc GetCheckOutOptionsGroup(Empty) returns (stream CheckOut) {}
 
     rpc CreateCheckInIndividual(Location) returns (Status) {}
     rpc CreateCheckInGroup(Location) returns (Status) {}
-    rpc CreateCheckOut(CheckOut) returns (Status) {}
+    rpc CreateCheckOutIndividual(CheckOut) returns (Status) {}
+    rpc CreateCheckOutGroup(CheckOut) returns (Status) {}
 
     rpc GetAllUsers(Empty) returns (stream User) {}
     rpc GetGroupsByUser(Empty) returns (stream Group) {}
@@ -58,7 +60,8 @@ message Location {
 message CheckOut {
     int32 id = 1;
     Location location = 2;
-    Group group = 3;
+    string check_in = 3;
+    Group group = 4;
 }
 
 message SafeEntry {

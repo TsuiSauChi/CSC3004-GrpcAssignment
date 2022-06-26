@@ -18,6 +18,9 @@ SELECT l.name, c.check_in, c.check_out, g.name from Checkinouts c
             WHERE name = 'user1'
     );
 
+SELECT * FROM Users u 
+    
+
 -- Create new Checkin 
 INSERT INTO Checkinouts (user_id, location_id)
     VALUES (
@@ -114,3 +117,25 @@ SELECT DISTINCT l.name FROM Locations l
         ON u.id = c.user_id
     WHERE c.check_in::DATE - 14 <= NOW()
         AND u.name = 'user1';
+
+-- Get Check out options for user
+SELECT l.name, c.check_in FROM Users u 
+    INNER JOIN Checkinouts c 
+        ON u.id = c.user_id
+    INNER JOIN Locations l 
+        ON l.id = c.location_id
+    WHERE c.check_out IS NULL and u.name = 'user1';
+
+-- Get Check out options for group
+SELECT l.name, c.check_in, g.name FROM Users u 
+    INNER JOIN Checkinouts c 
+        ON u.id = c.user_id
+    INNER JOIN Locations l 
+        ON l.id = c.location_id
+    INNER JOIN Groups g 
+        ON c.group_id = g.id
+    WHERE c.check_out IS NULL and u.name = 'user1';
+
+SELECT * FROM Checkinouts c 
+    INNER JOIN Groups g 
+        ON c.group_id = g.id;
