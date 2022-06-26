@@ -27,6 +27,8 @@ service TrackingService  {
     
     rpc GetCovidLocationByUser (User) returns (stream Location) {}
     rpc CreateReportCovidCase (stream Location) returns (Status) {}
+
+    rpc GetAllNotificiationByUser (Empty) returns (stream Notificiation) {}
 }
 
 message Empty {
@@ -69,6 +71,12 @@ message SafeEntry {
     Group group = 2;
     string checkin = 3;
     string checkout = 4;
+}
+
+message Notificiation {
+    Location location = 1;
+    string checkin = 2;
+    string case_date = 3;
 }
 
 message Case {

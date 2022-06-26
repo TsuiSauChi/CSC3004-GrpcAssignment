@@ -80,12 +80,23 @@ INSERT INTO Cases (user_id, location_id) VALUES (
 );
 
 -- Get All Users associated with Cases in the past 14 days 
-SELECT DISTINCT u.name FROM Users u 
+SELECT u.name FROM Users u 
     INNER JOIN Checkinouts c 
         ON u.id = c.user_id
     WHERE c.check_in::DATE - 14 <= (
         SELECT date FROM Cases WHERE id = 2
     );
+
+SELECT u.name, l.name, ca.date, c.check_in FROM Cases ca
+    INNER JOIN Locations l 
+        ON l.id = ca.location_id
+    INNER JOIN Checkinouts c 
+        ON c.location_id = l.id
+    INNER JOIN Users u 
+        ON u.id = c.user_id
+    WHERE ca.date::DATE - 14 <= c.check_in
+    AND u.name = %s;
+
 
 -- Check User Roles
 SELECT r.rolename FROM Roles r 
@@ -115,8 +126,7 @@ SELECT DISTINCT l.name FROM Locations l
         ON l.id = c.location_id
     INNER JOIN Users u 
         ON u.id = c.user_id
-    WHERE c.check_in::DATE - 14 <= NOW()
-        AND u.name = 'user1';
+    WHERE c.check_in::DATE - 14 <= NOW();
 
 -- Get Check out options for user
 SELECT l.name, c.check_in FROM Users u 

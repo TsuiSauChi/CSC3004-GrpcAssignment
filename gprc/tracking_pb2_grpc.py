@@ -90,6 +90,11 @@ class TrackingServiceStub(object):
                 request_serializer=tracking__pb2.Location.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
+        self.GetAllNotificiationByUser = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetAllNotificiationByUser',
+                request_serializer=tracking__pb2.Empty.SerializeToString,
+                response_deserializer=tracking__pb2.Notificiation.FromString,
+                )
 
 
 class TrackingServiceServicer(object):
@@ -186,6 +191,12 @@ class TrackingServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAllNotificiationByUser(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_TrackingServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -263,6 +274,11 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     servicer.CreateReportCovidCase,
                     request_deserializer=tracking__pb2.Location.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
+            ),
+            'GetAllNotificiationByUser': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetAllNotificiationByUser,
+                    request_deserializer=tracking__pb2.Empty.FromString,
+                    response_serializer=tracking__pb2.Notificiation.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -527,5 +543,22 @@ class TrackingService(object):
         return grpc.experimental.stream_unary(request_iterator, target, '/SafeEntry.TrackingService/CreateReportCovidCase',
             tracking__pb2.Location.SerializeToString,
             tracking__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllNotificiationByUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllNotificiationByUser',
+            tracking__pb2.Empty.SerializeToString,
+            tracking__pb2.Notificiation.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

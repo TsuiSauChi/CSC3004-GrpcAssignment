@@ -10,39 +10,25 @@ import psycopg2 as pg
 
 # Database Connection Config
 ### NEED TO REFCATOR HERE ###
-conn = pg.connect(
-    host="174.138.23.75",
-    database="testing",
-    user="postgres",
-    password="cl0udplus!"
-)
-
 # conn = pg.connect(
-#     host="localhost",
-#     database="grpc",
-#     user="jamestsui",
-#     password="password"
+#     host="174.138.23.75",
+#     database="testing",
+#     user="postgres",
+#     password="cl0udplus!"
 # )
+
+conn = pg.connect(
+    host="localhost",
+    database="grpc",
+    user="jamestsui",
+    password="password"
+)
 
 cur =  conn.cursor()
 
 # Set currentuser
 #currentuser = None
 currentuser = 'user1'
-
-# Notify contract tracking cases for the past 14 days
-def notifyUser(case_id):
-    cur.execute("""
-        SELECT DISTINCT u.name FROM Users u 
-        INNER JOIN Checkinouts c 
-            ON u.id = c.user_id
-        WHERE c.check_in::DATE - 14 <= (
-            SELECT date FROM Cases WHERE id = %s
-        );
-    """, case_id)
-    result = cur.fetchall()
-
-    # Logic: Send telegram notification to all user
 
 class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     
@@ -332,7 +318,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Create a Covid Case
     def CreateReportCovidCase(self, request_iterator, context):
-        print(request_iterator)
         try:
             for row in list(request_iterator):
                 cur.execute("""
@@ -345,7 +330,25 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             print(e)
             return tracking_pb2.Status(status=False)
         
-
+    def GetAllNotificiationByUser(self, request, context):
+        cur.execute("""
+        SELECT u.name, l.name, ca.date, c.check_in FROM Cases ca
+            INNER JOIN Locations l 
+                ON l.id = ca.location_id
+            INNER JOIN Checkinouts c 
+                ON c.location_id = l.id
+            INNER JOIN Users u 
+                ON u.id = c.user_id
+            WHERE ca.date::DATE - 14 <= c.check_in
+            AND u.name = %s;
+        """, (currentuser,))
+        result = cur.fetchall()
+        for row in result:
+            yield tracking_pb2.Notificiation(
+                location = tracking_pb2.Location(name = row[1]),
+                checkin = row[3].strftime("%m/%d/%Y, %H:%M:%S"),
+                case_date = row[2].strftime("%m/%d/%Y")
+            )
         
     
     

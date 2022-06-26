@@ -271,7 +271,6 @@ def getCovidLocationByUser(name):
             yield tracking_pb2.Location(id = location.id)
     createCovidCase(handler)
 
-## Error Here
 def createCovidCase(location_handler):
     # Check if there is mutiple location; whether request is a stream
     if callable(location_handler):
@@ -288,6 +287,15 @@ def createCovidCase(location_handler):
         print(status)
         return status.status
 
+def getNotificiationByUser():
+    print()
+    print("### LISTING NOTIFICIATION OF COVID CONTACT ###")
+    print("#############################")
+    for count, row in enumerate(stub.GetAllNotificiationByUser(tracking_pb2.Empty())):
+        print(str(count+1) + " : Location: " + row.location.name)
+        print("Case Occurance: " + row.checkin)
+        print("Check in Date: " + row.case_date)
+        print()
 
 role = login(name, nric)
 
@@ -303,7 +311,8 @@ while loop:
         print("3: Create Group")
         print("4: List SafeEntry")
         print("5: Self Report Covid Case")
-        print("6: Exit Program")
+        print("6: List Covid Notificiation")
+        print("7: Exit Program")
 
         option = input("Enter your Option ")
 
@@ -373,12 +382,16 @@ while loop:
     elif option == "5" and role == "Normal":
         getCovidLocationByUser(name)
 
+    elif option == "6" and role == "Normal":
+        print("Notificiation")
+        getNotificiationByUser()
+
     elif option == "1" and role == "Officer":
         print("Select Location that has Covid Cases")
         location = selectLocation()
         createCovidCase(location.id)
 
-    elif (option == "6" and role == "Normal") or (option == "2" and role == "Officer"):
+    elif (option == "7" and role == "Normal") or (option == "2" and role == "Officer"):
         print("Existing Program")
         loop = False 
 
