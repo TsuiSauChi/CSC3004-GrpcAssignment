@@ -12,10 +12,11 @@ stub = tracking_pb2_grpc.TrackingServiceStub(channel)
 print("Weclome to SafeEntry")
 
 print()
-print("Login")
+print("LOGIN")
 
 name = input("Enter your Name: ")
 nric = input("Enter your NRIC: ")
+print()
 #name = 'officer'
 # name = 'user1'
 # nric = '98765432'
@@ -27,6 +28,7 @@ option = None
 
 def login(name, nric):
     auth = stub.Login(tracking_pb2.User(name=name,nric=nric))
+    print("####################")
     if auth.status.status is False:
         print("Incorrect Login Details")
         return None
@@ -49,7 +51,7 @@ def selectLocation():
         return None 
     # Get User input on location
     else:
-        print("Enter Location")
+        print("ENTER LOCATION")
         i = input("Select Option 1 to " + str(len(locations_list)) + ": ")
     if int(i) > len(locations_list):
         return None 
@@ -59,7 +61,8 @@ def selectLocation():
         return locations_list[int(i)-1]
 
 def getAllLocations():
-    print("Listing All Location")
+    print("####################")
+    print("LISTING ALL LOCATIONS")
     return list(stub.GetAllLocations(tracking_pb2.Empty()))
 
 # Note: Here has location
@@ -77,7 +80,7 @@ def checkInIndivudal(location):
 
 # Note: Here has location and group
 def checkInGroup(location, group):
-    print("Location and group", location, group)
+    print()
     result = stub.CreateCheckInGroup(tracking_pb2.Location(
         name = location,
         group = tracking_pb2.Group(name = group)
@@ -92,8 +95,7 @@ def checkInGroup(location, group):
 
 def selectGroup():
     groups_list = list(stub.GetGroupsByUser(tracking_pb2.User(name=name)))
-    print()
-    print("Listing Groups")
+    print("LISTING GROUPS")
     for count, group in enumerate(groups_list):
         print(str(count+1) + ": " + group.name)
     print()
@@ -152,7 +154,7 @@ def getCheckOutOptions():
     if int(i) > counter or int(i) <= 0 :
         return None
     else:
-        print("Success")
+        print()
         if int(i) <= len(checkout_list_individual):
             # Check out indiviudal
             status = checkOutIndivudal(checkout_list_individual[int(i)-1].id)
@@ -273,8 +275,14 @@ def getSafeEntryHistory():
         print()
 
 def getCovidLocationByUser(name):
+    print()
+    print("Self Reporting")
     def handler():
-        for location in stub.GetCovidLocationByUser(tracking_pb2.User(name=name)):
+        location_list = list(stub.GetCovidLocationByUser(tracking_pb2.User(name=name)))
+        if len(location_list) == 0:
+            print("User did not visit any locations in the past 14 days")
+        for location in location_list:
+            print("Notificiation will be sent to people who visited " + location.name)
             yield tracking_pb2.Location(id = location.id)
     createCovidCase(handler)
 
@@ -307,7 +315,7 @@ if role is not None:
     
     while loop: 
         print()
-        print("##########")
+        print("####################")
 
         # Options depending on user roles
         if role == "Normal":
@@ -320,7 +328,7 @@ if role is not None:
             print("6: List Covid Notificiation")
             print("7: Exit Program")
 
-            option = input("Enter your Option ")
+            option = input("Enter your Option: ")
 
             print()
         elif role == "Officer":
@@ -343,6 +351,7 @@ if role is not None:
                 loop = False
             else:
                 # Check whether check in is individual or group
+                print()
                 groupcheckin = input("Would like to Group Check in? (y/n) ")
                 print()
                 if groupcheckin == "y":

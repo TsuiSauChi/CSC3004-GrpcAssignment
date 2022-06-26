@@ -137,7 +137,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
    
     # Create Check In For Individual 
     def CreateCheckInIndividual(self, request, context):
-        print("Check in Individual Request", request)
         try:
             cur.execute("""
                         INSERT INTO Checkinouts (user_id, location_id)
@@ -155,7 +154,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
 
     # Create Check In For Group
     def CreateCheckInGroup(self, request, context):
-        print("Request", request)
         try:
             cur.execute("""
             SELECT DISTINCT u.id, g.id FROM Users u
@@ -170,7 +168,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
             """,(request.group.name,))
 
             users = cur.fetchall()
-            print("Users", users)
             for row in users:
                 cur.execute("""
                         INSERT INTO Checkinouts (user_id, group_id, location_id)
@@ -220,7 +217,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
         """, (request.name, ))
         result = cur.fetchall()
         for row in result:
-            print(row[1].strftime("%m/%d/%Y, %H:%M:%S"))
             yield tracking_pb2.CheckOut(
                 location = tracking_pb2.Location(
                     name = row[0]
@@ -249,7 +245,6 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     def CreateCheckOutGroup(self, request, context):
         try:
             datetime_object = datetime.strptime(request.check_in, "%m/%d/%Y, %H:%M:%S")
-            print(datetime_object)
 
             cur.execute("""
                 UPDATE Checkinouts 
@@ -299,7 +294,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     # Condition: What about Building and Store
     def GetCovidLocationByUser(self, request, context):
         cur.execute("""
-            SELECT DISTINCT l.id FROM Locations l 
+            SELECT DISTINCT l.id, l.name FROM Locations l 
                 INNER JOIN Checkinouts c
                     ON l.id = c.location_id
                 INNER JOIN Users u 
@@ -309,7 +304,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
         """, (request.name,))
         result = cur.fetchall()
         for row in result:
-            yield tracking_pb2.Location(id=row[0])
+            yield tracking_pb2.Location(id=row[0], name=row[1])
 
     # Create a Covid Case
     def CreateReportCovidCase(self, request_iterator, context):
