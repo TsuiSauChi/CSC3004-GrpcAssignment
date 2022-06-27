@@ -6,8 +6,7 @@ import tracking_pb2 as tracking__pb2
 
 
 class TrackingServiceStub(object):
-    """Note: Come back to
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -19,11 +18,6 @@ class TrackingServiceStub(object):
                 '/SafeEntry.TrackingService/Login',
                 request_serializer=tracking__pb2.User.SerializeToString,
                 response_deserializer=tracking__pb2.User.FromString,
-                )
-        self.GetAllLocations = channel.unary_stream(
-                '/SafeEntry.TrackingService/GetAllLocations',
-                request_serializer=tracking__pb2.Empty.SerializeToString,
-                response_deserializer=tracking__pb2.Location.FromString,
                 )
         self.CreateCheckInIndividual = channel.unary_unary(
                 '/SafeEntry.TrackingService/CreateCheckInIndividual',
@@ -44,6 +38,26 @@ class TrackingServiceStub(object):
                 '/SafeEntry.TrackingService/CreateCheckOutGroup',
                 request_serializer=tracking__pb2.CheckOut.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
+                )
+        self.GetSafeEntry = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetSafeEntry',
+                request_serializer=tracking__pb2.User.SerializeToString,
+                response_deserializer=tracking__pb2.SafeEntry.FromString,
+                )
+        self.CreateReportCovidCase = channel.stream_unary(
+                '/SafeEntry.TrackingService/CreateReportCovidCase',
+                request_serializer=tracking__pb2.Location.SerializeToString,
+                response_deserializer=tracking__pb2.Status.FromString,
+                )
+        self.GetAllNotificiationByUser = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetAllNotificiationByUser',
+                request_serializer=tracking__pb2.User.SerializeToString,
+                response_deserializer=tracking__pb2.Notificiation.FromString,
+                )
+        self.GetAllLocations = channel.unary_stream(
+                '/SafeEntry.TrackingService/GetAllLocations',
+                request_serializer=tracking__pb2.Empty.SerializeToString,
+                response_deserializer=tracking__pb2.Location.FromString,
                 )
         self.GetCheckOutOptionsIndividual = channel.unary_stream(
                 '/SafeEntry.TrackingService/GetCheckOutOptionsIndividual',
@@ -75,70 +89,91 @@ class TrackingServiceStub(object):
                 request_serializer=tracking__pb2.User.SerializeToString,
                 response_deserializer=tracking__pb2.Status.FromString,
                 )
-        self.GetSafeEntry = channel.unary_stream(
-                '/SafeEntry.TrackingService/GetSafeEntry',
-                request_serializer=tracking__pb2.User.SerializeToString,
-                response_deserializer=tracking__pb2.SafeEntry.FromString,
-                )
         self.GetCovidLocationByUser = channel.unary_stream(
                 '/SafeEntry.TrackingService/GetCovidLocationByUser',
                 request_serializer=tracking__pb2.User.SerializeToString,
                 response_deserializer=tracking__pb2.Location.FromString,
                 )
-        self.CreateReportCovidCase = channel.stream_unary(
-                '/SafeEntry.TrackingService/CreateReportCovidCase',
-                request_serializer=tracking__pb2.Location.SerializeToString,
-                response_deserializer=tracking__pb2.Status.FromString,
-                )
-        self.GetAllNotificiationByUser = channel.unary_stream(
-                '/SafeEntry.TrackingService/GetAllNotificiationByUser',
-                request_serializer=tracking__pb2.User.SerializeToString,
-                response_deserializer=tracking__pb2.Notificiation.FromString,
+        self.LatencyTest = channel.unary_unary(
+                '/SafeEntry.TrackingService/LatencyTest',
+                request_serializer=tracking__pb2.Time.SerializeToString,
+                response_deserializer=tracking__pb2.Empty.FromString,
                 )
 
 
 class TrackingServiceServicer(object):
-    """Note: Come back to
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def Login(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        """MAIN PROCEDURE CALLS
 
-    def GetAllLocations(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        1. Login 
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CreateCheckInIndividual(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """2. Perform Individual Check in 
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CreateCheckInGroup(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """3. Perform Group Check in 
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CreateCheckOutIndividual(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """4. Perform Individual Check Out
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CreateCheckOutGroup(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """5. Perform Group Check Out
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetSafeEntry(self, request, context):
+        """6. Listing Safe Entry History
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateReportCovidCase(self, request_iterator, context):
+        """7. Create Covid Case By Location
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAllNotificiationByUser(self, request, context):
+        """8. Get Notificiation of User
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAllLocations(self, request, context):
+        """SUB PROCEDURE CALLS
+
+        Get All Locations
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetCheckOutOptionsIndividual(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Get all possible check-out options
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -150,48 +185,41 @@ class TrackingServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetAllUsers(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Get All Users registered in the system
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetGroupsByUser(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Get All Groups that user is in
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CreateGroup(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Create Group
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def AddUserToGroup(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetSafeEntry(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Adding User to Group
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetCovidLocationByUser(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Get Locations that user has visited in the last 14days
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateReportCovidCase(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetAllNotificiationByUser(self, request, context):
+    def LatencyTest(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -204,11 +232,6 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     servicer.Login,
                     request_deserializer=tracking__pb2.User.FromString,
                     response_serializer=tracking__pb2.User.SerializeToString,
-            ),
-            'GetAllLocations': grpc.unary_stream_rpc_method_handler(
-                    servicer.GetAllLocations,
-                    request_deserializer=tracking__pb2.Empty.FromString,
-                    response_serializer=tracking__pb2.Location.SerializeToString,
             ),
             'CreateCheckInIndividual': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateCheckInIndividual,
@@ -229,6 +252,26 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     servicer.CreateCheckOutGroup,
                     request_deserializer=tracking__pb2.CheckOut.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
+            ),
+            'GetSafeEntry': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetSafeEntry,
+                    request_deserializer=tracking__pb2.User.FromString,
+                    response_serializer=tracking__pb2.SafeEntry.SerializeToString,
+            ),
+            'CreateReportCovidCase': grpc.stream_unary_rpc_method_handler(
+                    servicer.CreateReportCovidCase,
+                    request_deserializer=tracking__pb2.Location.FromString,
+                    response_serializer=tracking__pb2.Status.SerializeToString,
+            ),
+            'GetAllNotificiationByUser': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetAllNotificiationByUser,
+                    request_deserializer=tracking__pb2.User.FromString,
+                    response_serializer=tracking__pb2.Notificiation.SerializeToString,
+            ),
+            'GetAllLocations': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetAllLocations,
+                    request_deserializer=tracking__pb2.Empty.FromString,
+                    response_serializer=tracking__pb2.Location.SerializeToString,
             ),
             'GetCheckOutOptionsIndividual': grpc.unary_stream_rpc_method_handler(
                     servicer.GetCheckOutOptionsIndividual,
@@ -260,25 +303,15 @@ def add_TrackingServiceServicer_to_server(servicer, server):
                     request_deserializer=tracking__pb2.User.FromString,
                     response_serializer=tracking__pb2.Status.SerializeToString,
             ),
-            'GetSafeEntry': grpc.unary_stream_rpc_method_handler(
-                    servicer.GetSafeEntry,
-                    request_deserializer=tracking__pb2.User.FromString,
-                    response_serializer=tracking__pb2.SafeEntry.SerializeToString,
-            ),
             'GetCovidLocationByUser': grpc.unary_stream_rpc_method_handler(
                     servicer.GetCovidLocationByUser,
                     request_deserializer=tracking__pb2.User.FromString,
                     response_serializer=tracking__pb2.Location.SerializeToString,
             ),
-            'CreateReportCovidCase': grpc.stream_unary_rpc_method_handler(
-                    servicer.CreateReportCovidCase,
-                    request_deserializer=tracking__pb2.Location.FromString,
-                    response_serializer=tracking__pb2.Status.SerializeToString,
-            ),
-            'GetAllNotificiationByUser': grpc.unary_stream_rpc_method_handler(
-                    servicer.GetAllNotificiationByUser,
-                    request_deserializer=tracking__pb2.User.FromString,
-                    response_serializer=tracking__pb2.Notificiation.SerializeToString,
+            'LatencyTest': grpc.unary_unary_rpc_method_handler(
+                    servicer.LatencyTest,
+                    request_deserializer=tracking__pb2.Time.FromString,
+                    response_serializer=tracking__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -288,8 +321,7 @@ def add_TrackingServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class TrackingService(object):
-    """Note: Come back to
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def Login(request,
@@ -305,23 +337,6 @@ class TrackingService(object):
         return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/Login',
             tracking__pb2.User.SerializeToString,
             tracking__pb2.User.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def GetAllLocations(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllLocations',
-            tracking__pb2.Empty.SerializeToString,
-            tracking__pb2.Location.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -390,6 +405,74 @@ class TrackingService(object):
         return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/CreateCheckOutGroup',
             tracking__pb2.CheckOut.SerializeToString,
             tracking__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetSafeEntry(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetSafeEntry',
+            tracking__pb2.User.SerializeToString,
+            tracking__pb2.SafeEntry.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateReportCovidCase(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/SafeEntry.TrackingService/CreateReportCovidCase',
+            tracking__pb2.Location.SerializeToString,
+            tracking__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllNotificiationByUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllNotificiationByUser',
+            tracking__pb2.User.SerializeToString,
+            tracking__pb2.Notificiation.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllLocations(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllLocations',
+            tracking__pb2.Empty.SerializeToString,
+            tracking__pb2.Location.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -496,23 +579,6 @@ class TrackingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetSafeEntry(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetSafeEntry',
-            tracking__pb2.User.SerializeToString,
-            tracking__pb2.SafeEntry.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def GetCovidLocationByUser(request,
             target,
             options=(),
@@ -530,7 +596,7 @@ class TrackingService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def CreateReportCovidCase(request_iterator,
+    def LatencyTest(request,
             target,
             options=(),
             channel_credentials=None,
@@ -540,25 +606,8 @@ class TrackingService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/SafeEntry.TrackingService/CreateReportCovidCase',
-            tracking__pb2.Location.SerializeToString,
-            tracking__pb2.Status.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def GetAllNotificiationByUser(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/SafeEntry.TrackingService/GetAllNotificiationByUser',
-            tracking__pb2.User.SerializeToString,
-            tracking__pb2.Notificiation.FromString,
+        return grpc.experimental.unary_unary(request, target, '/SafeEntry.TrackingService/LatencyTest',
+            tracking__pb2.Time.SerializeToString,
+            tracking__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

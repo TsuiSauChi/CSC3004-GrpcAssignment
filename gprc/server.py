@@ -314,7 +314,7 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
     # Get Notificiation By User
     def GetAllNotificiationByUser(self, request, context):
         cur.execute("""
-        SELECT distinct u.name, l.name, ca.date, c.check_in FROM Cases ca
+        SELECT distinct u.name, l.name, ca.date, c.check_in, c.check_out FROM Cases ca
             INNER JOIN Locations l 
                 ON l.id = ca.location_id
             INNER JOIN Checkinouts c 
@@ -326,11 +326,27 @@ class TrackingService(tracking_pb2_grpc.TrackingServiceServicer):
         """, (request.name,))
         result = cur.fetchall()
         for row in result:
-            yield tracking_pb2.Notificiation(
-                location = tracking_pb2.Location(name = row[1]),
-                checkin = row[3].strftime("%m/%d/%Y, %H:%M:%S"),
-                case_date = row[2].strftime("%m/%d/%Y")
-            )
+            if row[4] == None:
+                yield tracking_pb2.Notificiation(
+                    location = tracking_pb2.Location(name = row[1]),
+                    check_in = row[3].strftime("%m/%d/%Y, %H:%M:%S"),
+                    check_out = "",
+                    case_date = row[2].strftime("%m/%d/%Y")
+                )
+            else:
+                yield tracking_pb2.Notificiation(
+                    location = tracking_pb2.Location(name = row[1]),
+                    check_in = row[3].strftime("%m/%d/%Y, %H:%M:%S"),
+                    check_out = row[4].strftime("%m/%d/%Y, %H:%M:%S"),
+                    case_date = row[2].strftime("%m/%d/%Y")
+                )
+
+    def LatencyTest(self, request, context):
+        a = datetime.strptime(request.time, "%Y-%m-%d %H:%M:%S.%f")
+        b = datetime.now()
+        print("Time Taken from client to server")
+        print(b-a)
+        return tracking_pb2.Time(time=str())
         
     
     

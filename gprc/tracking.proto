@@ -3,32 +3,46 @@ syntax = "proto3";
 
 package SafeEntry;
 
-// Note: Come back to
 service TrackingService  {
 
+    // MAIN PROCEDURE CALLS
+
+    //1. Login 
     rpc Login (User) returns (User) {}
-
-    rpc GetAllLocations(Empty) returns (stream Location) {}
-
+    //2. Perform Individual Check in 
     rpc CreateCheckInIndividual(Location) returns (Status) {}
+    //3. Perform Group Check in 
     rpc CreateCheckInGroup(Location) returns (Status) {}
+    //4. Perform Individual Check Out
     rpc CreateCheckOutIndividual(CheckOut) returns (Status) {}
+    //5. Perform Group Check Out
     rpc CreateCheckOutGroup(CheckOut) returns (Status) {}
+    //6. Listing Safe Entry History
+    rpc GetSafeEntry(User) returns (stream SafeEntry) {}
+    //7. Create Covid Case By Location
+    rpc CreateReportCovidCase (stream Location) returns (Status) {}
+    //8. Get Notificiation of User
+    rpc GetAllNotificiationByUser (User) returns (stream Notificiation) {}
 
+    // SUB PROCEDURE CALLS
+    
+    // Get All Locations
+    rpc GetAllLocations(Empty) returns (stream Location) {}
+    // Get all possible check-out options
     rpc GetCheckOutOptionsIndividual(User) returns (stream CheckOut) {}
     rpc GetCheckOutOptionsGroup(User) returns (stream CheckOut) {}
-
+    // Get All Users registered in the system
     rpc GetAllUsers(User) returns (stream User) {}
+    // Get All Groups that user is in
     rpc GetGroupsByUser(User) returns (stream Group) {}
+    // Create Group
     rpc CreateGroup(Group) returns (Group) {}
+    // Adding User to Group
     rpc AddUserToGroup(stream User) returns (Status) {}
-    
-    rpc GetSafeEntry(User) returns (stream SafeEntry) {}
-    
+    // Get Locations that user has visited in the last 14days
     rpc GetCovidLocationByUser (User) returns (stream Location) {}
-    rpc CreateReportCovidCase (stream Location) returns (Status) {}
 
-    rpc GetAllNotificiationByUser (User) returns (stream Notificiation) {}
+    rpc LatencyTest (Time) returns (Empty) {}
 }
 
 message Empty {
@@ -76,13 +90,18 @@ message SafeEntry {
 
 message Notificiation {
     Location location = 1;
-    string checkin = 2;
-    string case_date = 3;
+    string check_in = 2;
+    string check_out = 3;
+    string case_date = 4;
 }
 
 message Case {
     User user = 1;
     Location location = 2;
+}
+
+message Time {
+    string time = 1;
 }
 
 //python3 -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. ./tracking.proto
