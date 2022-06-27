@@ -28,19 +28,9 @@ INSERT INTO UserGroups (user_id, group_id)
 INSERT INTO Locations (name)
     VALUES
         ('Orchard Road'),
-        ('Paya Lebar');
-
-INSERT INTO Buildings (location_id, name, shopping_mall)
-    VALUES 
-        (1, 'ION Orchard', true),
-        (1, 'Far East Plaza', true),
-        (1, 'ION Art Gallery', false);
-
-INSERT INTO Stores (building_id, name)
-    VALUES 
-        (1, 'Jumbo Seafood'),
-        (1, 'Toast Box'),
-        (2, 'Dunkin Donuts');
+        ('Paya Lebar'),
+        ('Parkway Parade'),
+        ('Bugis');
 
 INSERT INTO Checkinouts (user_id, location_id, check_in, check_out)
     VALUES 
